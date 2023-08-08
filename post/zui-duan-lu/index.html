@@ -1,0 +1,819 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>最短路 | Nuclear_pasta&#39;s algorithm blog</title>
+<link rel="shortcut icon" href="https://NuclearPasta3579.github.io//favicon.ico?v=1691492062355">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://NuclearPasta3579.github.io//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="最短路 | Nuclear_pasta&#39;s algorithm blog - Atom Feed" href="https://NuclearPasta3579.github.io//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="1.最短路问题
+给定一个图，图中边带有边权，求从一个点到另一个点的路径的最小距离从一个点出发的是单源最短路问题，多个点出发的对应多源最短路问题。
+2.最短路问题专有名词
+
+负权边：一条边，经过时距离减小。
+负权环：一个环，绕一圈后距离减小。..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://NuclearPasta3579.github.io/">
+  <img class="avatar" src="https://NuclearPasta3579.github.io//images/avatar.png?v=1691492062355" alt="">
+  </a>
+  <h1 class="site-title">
+    Nuclear_pasta&#39;s algorithm blog
+  </h1>
+  <p class="site-description">
+    Algorithm bolg
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              最短路
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-08-08
+              </span>
+              <span>
+                22 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="1最短路问题">1.最短路问题</h1>
+<p>给定一个图，图中边带有边权，求从一个点到另一个点的路径的最小距离从一个点出发的是单源最短路问题，多个点出发的对应多源最短路问题。</p>
+<h1 id="2最短路问题专有名词">2.最短路问题专有名词</h1>
+<ol>
+<li>负权边：一条边，经过时距离减小。</li>
+<li>负权环：一个环，绕一圈后距离减小。</li>
+</ol>
+<h1 id="3最短路算法">3.最短路算法</h1>
+<h2 id="1广搜双端队列广搜">1.广搜&amp;&amp;双端队列广搜</h2>
+<p>广搜是最基础且其中最快的方法，每扩展到一个点就把它加入队列进行扩展，然后不再更改，时间复杂度 O(|V|+|E|)，但只能处理所有边权为 1 的最短路，当出现边权为 0 的边时，为了保证有序性，需将对应点放在队首，于是有了双端队列广搜。<br>
+广搜代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;vector&gt;
+#include&lt;cstring&gt;
+#include&lt;queue&gt;
+using namespace std;
+const int maxn=1000005;
+int s[1000005],n,m;
+bool vis[maxn];
+struct edge{
+	int end,len;
+}; 
+vector&lt;edge&gt;map[maxn];
+queue&lt;int&gt;q;
+inline void distance_srh(){
+	q.push(1);
+	memset(s,0x3f3f3f3f,sizeof(s));
+	s[1]=0;
+	while(!q.empty()){
+		int d=q.front();
+		q.pop();
+		if(vis[d])continue;
+		vis[d]=true;
+		for(int i=0;map[d].size()&gt;i;i++){
+			if(s[map[d][i].end]==0x3f3f3f3f||s[map[d][i].end]&gt;s[d]+map[d][i].len){
+				s[map[d][i].end]=s[d]+map[d][i].len;
+				q.push(map[d][i].end);
+				continue;
+			}
+		}
+	}
+}
+int main(){
+    scanf(&quot;%d%d&quot;,&amp;n,&amp;m);
+    for(int i=1;m&gt;=i;i++){
+    	int u,v;
+        scanf(&quot;%d%d&quot;,&amp;u,&amp;v);
+        edge t;
+        t.end=v;
+		t.len=1;
+        map[u].push_back(t);
+        t.end=u;
+        map[v].push_back(t);
+    }
+    distance_srh();
+    for(int i=1;n&gt;=i;i++){
+        printf(&quot;%d\n&quot;,s[i]);
+    }
+    return 0;
+}
+
+</code></pre>
+<p>精讲：做<a href="https://www.luogu.com.cn/problem/P1144">最短路计数</a>时，如果更新最短路，则使最短路条数为用来更新此点最短路的最短路条数，遍历到最短路与扩展长度相同时，对应点最短路条数加上此点最短路条数。<br>
+代码：</p>
+<pre><code>#include&lt;cstdio&gt;
+#include&lt;vector&gt;
+#include&lt;cstring&gt;
+#include&lt;queue&gt;
+using namespace std;
+const int maxn=1000005;
+int s[1000005],n,m,ans[1000005];
+bool vis[maxn];
+struct edge{
+	int end,len;
+}; 
+vector&lt;edge&gt;map[maxn];
+queue&lt;int&gt;q;
+inline void distance_srh(){
+	q.push(1);
+	memset(s,0x3f3f3f3f,sizeof(s));
+	s[1]=0;
+	ans[1]=1;
+	while(!q.empty()){
+		int d=q.front();
+		q.pop();
+		if(vis[d])continue;
+		vis[d]=true;
+		for(int i=0;map[d].size()&gt;i;i++){
+			if(s[map[d][i].end]==0x3f3f3f3f||s[map[d][i].end]&gt;s[d]+map[d][i].len){
+				s[map[d][i].end]=s[d]+map[d][i].len;
+				q.push(map[d][i].end);
+				ans[map[d][i].end]=ans[d];
+				continue;
+			}
+			if(s[d]+map[d][i].len==s[map[d][i].end]){
+				ans[map[d][i].end]=(ans[d]+ans[map[d][i].end])%100003;
+			}
+		}
+	}
+}
+int main(){
+    scanf(&quot;%d%d&quot;,&amp;n,&amp;m);
+    for(int i=1;m&gt;=i;i++){
+    	int u,v;
+        scanf(&quot;%d%d&quot;,&amp;u,&amp;v);
+        edge t;
+        t.end=v;
+		t.len=1;
+        map[u].push_back(t);
+        t.end=u;
+        map[v].push_back(t);
+    }
+    distance_srh();
+    for(int i=1;n&gt;=i;i++){
+        printf(&quot;%d\n&quot;,ans[i]);
+    }
+    return 0;
+}
+</code></pre>
+<p><a href="https://www.luogu.com.cn/training/211360">练习</a><br>
+其中有题卡常，不知道如何防卡常的请移步<a href="https://www.luogu.com.cn/blog/lcm15987/FKCBK">这里</a></p>
+<h2 id="2bellman-fold">2.Bellman-Fold</h2>
+<p><code>Bellman-Fold</code>是一个单源最短路算法，其可以解决基本上所有的最短路问题，且能判断负环，时间复杂度为 O(|V||E|)。<br>
+<code>Bellman-Fold</code>会枚举 n-1 次，遍历每条边进行更新答案，然后再一次遍历每条边，此时若还能更新最短路，则对应出现负环。<br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;algorithm&gt; 
+#include&lt;cstring&gt; 
+using namespace std;
+long long n,dist[100001],m,cnt=0,t,wk;
+bool isused[100001];
+struct edge{
+	long long st,ed,len;
+};
+edge e[100001];
+void edgep(long long u,long long v,long long w){
+	++cnt;
+    e[cnt].st=u;
+    e[cnt].ed=v;
+    e[cnt].len=w;
+}
+void bsrh(long long begin){
+	
+	memset(isused,true,sizeof(isused));
+	isused[begin]=true;
+	for(long long i=1;i&lt;n;i++){
+		for(long long j=1;j&lt;=cnt;j++){
+			if(isused[e[j].st]){
+				isused[e[j].ed]=true;
+				dist[e[j].ed]=min(dist[e[j].st]+e[j].len,dist[e[j].ed]);
+			}
+		}
+	}
+	
+	for(long long j=1;j&lt;=cnt;j++){
+		if(!isused[e[j].st])
+			continue;
+		if(dist[e[j].st]+e[j].len&lt;dist[e[j].ed]){
+			printf(&quot;Cannot be solved!\n&quot;);
+			return;			 
+		}
+	}
+	for(int i=1;i&lt;=n;i++){
+   	  printf(&quot;%lld &quot;,dist[i]);
+   }
+}
+int main(){
+    memset(dist,0x3f3f3f3f,sizeof(dist));
+    scanf(&quot;%lld%lld&quot;,&amp;n,&amp;m);
+    cnt=0;
+    for(long long j=1;j&lt;=m;j++){
+        long long u,v,w;
+        scanf(&quot;%lld%lld%lld&quot;,&amp;u,&amp;v,&amp;w);
+        edgep(u,v,w);
+    }
+    dist[1]=0;
+    bsrh(1);
+    return 0;
+}
+</code></pre>
+<p><code>Bellman-Fold</code>有许多优化，其中较为常见的是队列优化以及队列优化的其他优化，队列优化是指暴力地从原点开始，只要更新最短路，就从此点先后拓展，一个点访问 n 次即有负环。<br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;vector&gt;
+#include&lt;queue&gt;
+using namespace std;
+long long n,m,s;
+long long u,v,w;
+bool vis[10001];
+struct edge{
+	long long end,len;
+};
+vector&lt;edge&gt;e[10001];
+long long dist[10001];
+void Bellman_Fold(long long begin){
+	for(long long i=1;i&lt;=n;i++){
+		dist[i]=3e10;
+	}
+	dist[begin]=0;
+	vis[begin]=true;
+	queue&lt;long long&gt;q;
+	q.push(begin);
+	while(!q.empty()){
+		long long d=q.front();
+		q.pop();
+		for(int i=0;i&lt;e[d].size();i++){
+			if(!vis[e[d][i].end]||dist[d]+e[d][i].len&lt;dist[e[d][i].end]){
+				vis[e[d][i].end]=true;
+				dist[e[d][i].end]=dist[d]+e[d][i].len;
+				q.push(e[d][i].end);
+			}
+		}
+	}
+	for(long long i=1;i&lt;=n;i++){
+	    if(!vis[i])
+	       printf(&quot;%lld &quot;,(1&lt;&lt;31)-1);
+	    else
+		    printf(&quot;%lld &quot;,dist[i]);
+	}
+}
+int main(){
+	scanf(&quot;%lld%lld%lld&quot;,&amp;n,&amp;m,&amp;s);
+	for(long long i=1;i&lt;=m;i++){
+		scanf(&quot;%lld%lld%lld&quot;,&amp;u,&amp;v,&amp;w);
+		e[u].push_back(edge{v,w});
+	}
+	Bellman_Fold(s);
+	return 0;
+}
+</code></pre>
+<p>因为队列优化节省了大量更新，所以其最快可以达到 O(|V|+|E|)，故而大型比赛通常都会在部分最短路题目中卡掉该解法。<br>
+<strong>精讲题目：</strong><a href="https://www.luogu.com.cn/problem/P2865">here</a><br>
+解法：每个点存最短路和次短路，跑的时候，不管更新的是最短路还是次短路都要更新。本博主开了<code>SLF</code>优化，对应如果加入队列的值比队首更优，则加入队首。<br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;queue&gt;
+#include&lt;vector&gt;
+#include&lt;cstring&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+long long n,m,s,t,u,v,w,dist[2][5001];
+bool vis[5001];
+struct edge{
+	long long ed,len;
+	
+};
+vector&lt;edge&gt;e[5001];
+deque&lt;long long&gt;q;
+inline void SLF(long long k){
+    if(q.empty()||dist[0][k]&lt;dist[0][q.front()]||(dist[0][k]==dist[0][q.front()]&amp;&amp;dist[1][k]&lt;dist[1][q.front()]))q.push_front(k);
+    else q.push_back(k);
+}
+void Bellman_Fold(long long begin){
+	memset(dist,0x3f3f3f3f,sizeof(dist));
+	memset(vis,false,sizeof(vis));
+	q.push_back(begin);
+	dist[0][begin]=0;
+	while(!q.empty()){
+		long long d=q.front();
+		q.pop_front();
+		if(vis[d])continue;
+		vis[d]=false;
+		for(long long i=0;e[d].size()&gt;i;i++){
+		    if(dist[0][e[d][i].ed]&gt;dist[0][d]+e[d][i].len){
+		        dist[1][e[d][i].ed]=dist[0][e[d][i].ed];
+                if(dist[1][d]+e[d][i].len&lt;dist[1][e[d][i].ed])dist[1][e[d][i].ed]=dist[1][d]+e[d][i].len;
+				dist[0][e[d][i].ed]=dist[0][d]+e[d][i].len;
+				if(!vis[e[d][i].ed])SLF(e[d][i].ed);
+			}
+			else if(dist[1][e[d][i].ed]&gt;dist[0][d]+e[d][i].len&amp;&amp;dist[0][e[d][i].ed]!=dist[0][d]+e[d][i].len){
+				dist[1][e[d][i].ed]=dist[0][d]+e[d][i].len;
+				if(!vis[e[d][i].ed])SLF(e[d][i].ed);
+			}
+            else if(dist[1][e[d][i].ed]&gt;dist[1][d]+e[d][i].len&amp;&amp;dist[1][e[d][i].ed]!=dist[1][d]+e[d][i].len){
+				dist[1][e[d][i].ed]=dist[1][d]+e[d][i].len;
+				if(!vis[e[d][i].ed])SLF(e[d][i].ed);
+			}
+		}
+	}
+}
+int main(){
+	scanf(&quot;%lld%lld&quot;,&amp;n,&amp;m);
+	for(long long i=1;m&gt;=i;i++){
+		scanf(&quot;%lld%lld%lld&quot;,&amp;u,&amp;v,&amp;w);
+		e[u].push_back(edge{v,w});
+		e[v].push_back(edge{u,w});
+	}
+	Bellman_Fold(n);
+	printf(&quot;%lld\n&quot;,dist[1][1]);
+	return 0;
+}
+</code></pre>
+<p><a href="https://www.luogu.com.cn/training/156445">练习</a></p>
+<h2 id="3dijkstra">3.Dijkstra</h2>
+<p><code>Dijkstra</code>是一种常用的单源最短路算法，其无法处理带负权边的问题，但更快。<br>
+跑<code>Dijkstra</code>时，我们每次会选未扩展且最短路最小的点进行扩展，并更新其他点的最短路。<br>
+一个裸的<code>Dijkstra</code>的复杂度为 O(|V|^2+|E|)，但选扩展点的任务可以用优先队列来维护，使其复杂度变为 O((|V|+|E|)\log |V|)。<br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;queue&gt;
+#include&lt;vector&gt;
+#include&lt;cstring&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+unsigned long long n,m,s,t,u,v,w,dist[100001];
+bool vis[100001];
+struct edge{
+	unsigned long long ed,len;
+	
+};
+bool operator&lt;(edge mk,edge k){
+		return mk.len&gt;k.len;
+	}
+vector&lt;edge&gt;e[100001];
+priority_queue&lt;edge&gt;q;
+void Dijkstra(unsigned long long begin){
+	memset(dist,0x3f3f3f3f,sizeof(dist));
+	memset(vis,false,sizeof(vis));
+	q.push(edge{begin,0});
+	dist[begin]=0;
+	while(!q.empty()){
+		edge d=q.top();
+		q.pop();
+		if(vis[d.ed])continue;
+		vis[d.ed]=true;
+		for(unsigned long long i=0;e[d.ed].size()&gt;i;i++){
+			if(dist[e[d.ed][i].ed]&gt;dist[d.ed]+e[d.ed][i].len){
+				dist[e[d.ed][i].ed]=dist[d.ed]+e[d.ed][i].len;
+				q.push(edge{e[d.ed][i].ed,dist[e[d.ed][i].ed]});
+			}
+		}
+	}
+}
+int main(){
+	scanf(&quot;%llu%llu%llu&quot;,&amp;n,&amp;m,&amp;s);
+	for(unsigned long long i=1;m&gt;=i;i++){
+		scanf(&quot;%lld%lld%lld&quot;,&amp;u,&amp;v,&amp;w);
+		e[u].push_back(edge{v,w});
+	}
+	Dijkstra(s);
+	for(unsigned long long i=1;i&lt;=n;i++){
+	    printf(&quot;%llu &quot;,dist[i]);
+	}
+	return 0;
+}
+</code></pre>
+<p><a href="https://www.luogu.com.cn/problem/P1462">精讲：通往奥格瑞玛的道路</a><br>
+此题需要二分对应的最大的一次收取的费用，跑最短路的时候，不走费用超过二分值的点，图中边的权值为走过后的损失的血量，如果其超过歪嘴哦的血量，则正确答案大于这个值。<br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;queue&gt;
+#include&lt;vector&gt;
+#include&lt;cstring&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+long long n,m,s,t,u,v,w,b,maxf,a[10001],dist[10001];
+bool vis[10001];
+struct edge{
+	long long ed,len;
+	
+};
+bool operator&lt;(edge mk,edge k){
+		return mk.len&gt;k.len;
+	}
+vector&lt;edge&gt;e[500001];
+priority_queue&lt;edge&gt;q;
+inline void Dijkstra(long long begin,long long jk){
+	memset(dist,0x3f3f3f3f,sizeof(dist));
+	memset(vis,false,sizeof(vis));
+	q.push(edge{begin,0});
+	dist[begin]=0;
+	while(!q.empty()){
+		edge d=q.top();
+		q.pop();
+		if(vis[d.ed])continue;
+		vis[d.ed]=true;
+		for(long long i=0;e[d.ed].size()&gt;i;i++){
+			if(a[e[d.ed][i].ed]&gt;jk)continue;
+			if(dist[e[d.ed][i].ed]&gt;dist[d.ed]+e[d.ed][i].len){
+				dist[e[d.ed][i].ed]=dist[d.ed]+e[d.ed][i].len;
+				q.push(edge{e[d.ed][i].ed,dist[e[d.ed][i].ed]});
+			}
+		}
+	}
+}
+int main(){
+	scanf(&quot;%lld%lld%lld&quot;,&amp;n,&amp;m,&amp;b);
+	long long l,r=~0x3f3f3f3f,mid;
+	for(long long i=1;i&lt;=n;i++){
+		scanf(&quot;%lld&quot;,&amp;a[i]);
+		r=max(r,a[i]);
+	}
+	for(long long i=1;i&lt;=m;i++){
+		scanf(&quot;%lld%lld%lld&quot;,&amp;u,&amp;v,&amp;w);
+		if(w&gt;b||(w==b&amp;&amp;!((u==1&amp;&amp;v==n)||(u==n&amp;&amp;v==1))))continue;
+		e[u].push_back(edge{v,w});
+		e[v].push_back(edge{u,w});
+	}
+	l=max(a[1]-1,max(a[n]-1,0ll));
+	bool ktv=false;
+	do{
+		mid=(l+r+1)/2;
+		Dijkstra(1,mid);
+		if(dist[n]&lt;=b){r=mid;ktv=true;}
+		else l=mid;
+	}
+	while(r-l&gt;1);
+	if(ktv&amp;&amp;r&gt;=l)printf(&quot;%lld\n&quot;,r);
+	else {
+		Dijkstra(1,r);
+		if(dist[n]&lt;=b){printf(&quot;%lld\n&quot;,r);}
+		else printf(&quot;AFK\n&quot;);
+	}
+	
+	return 0;
+}
+</code></pre>
+<p><a href="https://www.luogu.com.cn/training/185225">练习</a></p>
+<h2 id="4floyd">4.Floyd</h2>
+<p><code>Floyd</code>是个 O(|V|^3) 的全源最短路算法，使用前需保证此图不存在负环。其用 dist_{i,j} 存储从 i 到 j 的最短路，我们设从 i 到 j 的一条路中经过 k，则 dist_{i,j}=\min(dist_{i,j},dist_{i,k}+dist_{k,j})，遍历时先枚举 k，再枚举 i 和 j。<br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;cstring&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+int n,m,q,dist[101][101],u,v,w;
+int main(){
+    memset(dist,0x3f3f3f3f,sizeof(dist));
+    scanf(&quot;%d %d&quot;,&amp;n,&amp;m);
+    for(int i=1;i&lt;=n;i++)dist[i][i]=0;
+    for(int i=1;i&lt;=m;i++){
+        scanf(&quot;%d %d %d&quot;,&amp;u,&amp;v,&amp;w);
+        dist[u][v]=w;
+    }
+    for(int k=1;k&lt;=n;k++){
+        for(int i=1;i&lt;=n;i++){
+            for(int j=1;j&lt;=n;j++){
+                dist[i][j]=min(dist[i][j],dist[i][k]+dist[k][j]);
+            }
+        }
+    }
+    scanf(&quot;%d&quot;,&amp;q);
+    for(int i=1;i&lt;=q;i++){
+        scanf(&quot;%d %d&quot;,&amp;u,&amp;v);
+        printf(&quot;%d\n&quot;,dist[u][v]==0x3f3f3f3f?-1:dist[u][v]);
+    }
+    return 0;
+}
+</code></pre>
+<p><a href="https://www.luogu.com.cn/problem/P6512">精讲：[QkOI#R1] Quark and Flying Pigs</a><br>
+此题要用<code>Floyd</code>进行预处理，然后将所有的猪按出现时间排序，用 dp_i 表示第 i 只猪被抓到时最多抓了几只猪，得 dp_i=\max{\max\limits_{ t_i+dist_{i,j}\leq t_j}{dp_j+1},1}。<br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;algorithm&gt;
+#include&lt;cstring&gt;
+using namespace std;
+long long n,m,k;
+long long u,v,w,dist[209][209],dp[5009],ans=0;
+bool geted[209][209];
+struct pig{
+	long long t,vs;
+};
+pig p[5009];
+bool cmp(pig x,pig y){
+	return x.t&lt;y.t;
+}
+int main(){
+	scanf(&quot;%lld%lld%lld&quot;,&amp;n,&amp;m,&amp;k);
+	for(long long i=1;i&lt;=m;i++){
+		scanf(&quot;%lld%lld%lld&quot;,&amp;u,&amp;v,&amp;w);
+		dist[u][v]=w,dist[v][u]=w;
+		geted[u][v]=true,geted[v][u]=true;
+	}
+	for(long long i=1;i&lt;=n;i++){
+		geted[i][i]=true;
+		dist[i][i]=0;
+	}
+	for(long long k=1;k&lt;=n;k++)
+		for(long long i=1;i&lt;=n;i++)
+			for(long long j=1;j&lt;=n;j++)
+				if(geted[i][k]&amp;&amp;geted[k][j]){
+					if(!geted[i][j])dist[i][j]=dist[i][k]+dist[k][j];
+					else dist[i][j]=min(dist[i][j],dist[i][k]+dist[k][j]);
+					geted[i][j]=true;
+				}
+	p[0].t=0,p[0].vs=1;
+	for(long long i=1;i&lt;=k;i++){
+		scanf(&quot;%lld%lld&quot;,&amp;p[i].t,&amp;p[i].vs);
+	}
+	sort(p+1,p+k+1,cmp);
+	memset(dp,~0x3f3f3f3f,sizeof(dp));
+	dp[0]=0;
+	for(long long i=1;i&lt;=k;i++){
+		for(long long j=0;j&lt;i;j++){
+			if(geted[p[j].vs][p[i].vs]&amp;&amp;p[i].t-p[j].t&gt;=dist[p[j].vs][p[i].vs])
+			dp[i]=max(dp[i],dp[j]+1);
+		}
+	}
+	for(long long i=1;i&lt;=k;i++){
+		ans=max(ans,dp[i]);
+	}
+	printf(&quot;%lld&quot;,ans);
+	return 0;
+}
+</code></pre>
+<p><a href="https://www.luogu.com.cn/training/269039#information">练习</a></p>
+<h2 id="5a">5.A*</h2>
+<p><code>A*</code>是一个单源最短路算法，且只能处理一个终点，故更常用在变形上。它与<code>Dijkstra</code>类似，但会预测后续的答案，并用目前答案加上预处理值进行比较。<br>
+<code>A*</code>有个好处在于若先从终点出发跑最短路求预处理值，第 k 个到达终点的是第 k 短路，故而<code>A*</code>有时被用在解 k 短路上。<br>
+<code>A*</code>解 k 短路代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;queue&gt;
+#include&lt;vector&gt;
+#include&lt;cstring&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+unsigned long long n,m,s,t,u,v,w,dist[1009],k;
+bool vis[1009];
+struct edge{
+	unsigned long long ed,len;
+	
+};
+bool operator&lt;(edge mk,edge k){
+		return mk.len&gt;k.len;
+	}
+struct toa_s{
+    unsigned long long ed,len;
+};
+bool operator&lt;(toa_s mk,toa_s k){
+    return mk.len+dist[mk.ed]&gt;k.len+dist[k.ed];
+}
+vector&lt;edge&gt;e[1009],el[1009];
+priority_queue&lt;edge&gt;q;
+priority_queue&lt;toa_s&gt;pq;
+void Dijkstra(unsigned long long begin){
+	memset(dist,0x3f3f3f3f,sizeof(dist));
+	memset(vis,false,sizeof(vis));
+	q.push(edge{begin,0});
+	dist[begin]=0;
+	while(!q.empty()){
+		edge d=q.top();
+		q.pop();
+		if(vis[d.ed])continue;
+		vis[d.ed]=true;
+		for(unsigned long long i=0;e[d.ed].size()&gt;i;i++){
+			if(dist[e[d.ed][i].ed]&gt;dist[d.ed]+e[d.ed][i].len){
+				dist[e[d.ed][i].ed]=dist[d.ed]+e[d.ed][i].len;
+				q.push(edge{e[d.ed][i].ed,dist[e[d.ed][i].ed]});
+			}
+		}
+	}
+}
+int ola[1009];
+void a_star(unsigned long long begin){
+	pq.push(toa_s{begin,0});
+	while(!pq.empty()&amp;&amp;ola[t]&lt;k){
+		toa_s d=pq.top();
+		pq.pop();
+		if(ola[d.ed]&gt;=k)continue;
+		ola[d.ed]++;
+		if(d.ed==t){
+			printf(&quot;%llu\n&quot;,d.len);
+			if(ola[d.ed]&gt;=k)return;
+		}
+		for(unsigned long long i=0;el[d.ed].size()&gt;i;i++){
+			if(ola[el[d.ed][i].ed]&lt;k){
+				pq.push(toa_s{el[d.ed][i].ed,d.len+el[d.ed][i].len});
+			}
+		}
+	}
+	for(int i=ola[t]+1;i&lt;=k;i++){
+	    printf(&quot;-1\n&quot;);
+	}
+}
+int main(){
+	scanf(&quot;%llu%llu%llu&quot;,&amp;n,&amp;m,&amp;k);
+	for(unsigned long long i=1;m&gt;=i;i++){
+		scanf(&quot;%llu%llu%llu&quot;,&amp;u,&amp;v,&amp;w);
+		el[u].push_back(edge{v,w});
+		e[v].push_back(edge{u,w});
+	}
+	s=n,t=1;
+	Dijkstra(t);
+	a_star(s);
+	return 0;
+}
+
+</code></pre>
+<p><a href="https://www.luogu.com.cn/problem/P2901">练习</a></p>
+<h1 id="4最短路的特殊应用">4.最短路的特殊应用</h1>
+<h2 id="1差分约束">1.差分约束</h2>
+<h2 id="问题">问题</h2>
+<p>给定变量 x_1,x_2,...x_n，给出 m 个不等式，通过不等式求变量的解的最值。</p>
+<h2 id="解法">解法</h2>
+<p>n 个变量对应 n 个点，根据不等式对应的大于等于关系建边，然后跑最短路可以得最大值，根据不等式对应的小于等于关系建边，注意边的改变方式取反，然后跑最短路，可以得最小值。<br>
+<a href="https://www.luogu.com.cn/training/269058">练习</a></p>
+<h2 id="2分层图">2.分层图</h2>
+<p>给定一个图，有一些变量影响边权，求最短路。</p>
+<h2 id="方法">方法</h2>
+<p>将图按变量分层，然后跑最短路。<br>
+<a href="https://www.luogu.com.cn/training/269060">练习</a></p>
+<h2 id="3同余最短路">3.同余最短路</h2>
+<p>给定一个模数和改变数的变量值及其成本，求出从一个数到余数为一个数的最小成本。</p>
+<h2 id="解法-2">解法</h2>
+<p>每种余数的情况对应一个点，通过余数的可加性，假设一个余 i 的数通过成本为 c 的方式变为余 j 的数，则从 i 号点向 j 号点连一条长为 c 的边。<br>
+<a href="https://www.luogu.com.cn/training/269062">练习</a></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1%E6%9C%80%E7%9F%AD%E8%B7%AF%E9%97%AE%E9%A2%98">1.最短路问题</a></li>
+<li><a href="#2%E6%9C%80%E7%9F%AD%E8%B7%AF%E9%97%AE%E9%A2%98%E4%B8%93%E6%9C%89%E5%90%8D%E8%AF%8D">2.最短路问题专有名词</a></li>
+<li><a href="#3%E6%9C%80%E7%9F%AD%E8%B7%AF%E7%AE%97%E6%B3%95">3.最短路算法</a>
+<ul>
+<li><a href="#1%E5%B9%BF%E6%90%9C%E5%8F%8C%E7%AB%AF%E9%98%9F%E5%88%97%E5%B9%BF%E6%90%9C">1.广搜&amp;&amp;双端队列广搜</a></li>
+<li><a href="#2bellman-fold">2.Bellman-Fold</a></li>
+<li><a href="#3dijkstra">3.Dijkstra</a></li>
+<li><a href="#4floyd">4.Floyd</a></li>
+<li><a href="#5a">5.A*</a></li>
+</ul>
+</li>
+<li><a href="#4%E6%9C%80%E7%9F%AD%E8%B7%AF%E7%9A%84%E7%89%B9%E6%AE%8A%E5%BA%94%E7%94%A8">4.最短路的特殊应用</a>
+<ul>
+<li><a href="#1%E5%B7%AE%E5%88%86%E7%BA%A6%E6%9D%9F">1.差分约束</a></li>
+<li><a href="#%E9%97%AE%E9%A2%98">问题</a></li>
+<li><a href="#%E8%A7%A3%E6%B3%95">解法</a></li>
+<li><a href="#2%E5%88%86%E5%B1%82%E5%9B%BE">2.分层图</a></li>
+<li><a href="#%E6%96%B9%E6%B3%95">方法</a></li>
+<li><a href="#3%E5%90%8C%E4%BD%99%E6%9C%80%E7%9F%AD%E8%B7%AF">3.同余最短路</a></li>
+<li><a href="#%E8%A7%A3%E6%B3%95-2">解法</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://NuclearPasta3579.github.io/post/bei-zeng/">
+              <h3 class="post-title">
+                倍增
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'd3fea9ea0eaef57f738e',
+    clientSecret: '93ea1d6a6d0695e7e635e3fc856082d56a50f2b9',
+    repo: 'nuclearpasta3579.github.io',
+    owner: 'NuclearPasta3579',
+    admin: ['NuclearPasta3579'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://NuclearPasta3579.github.io//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

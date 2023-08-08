@@ -1,0 +1,442 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>生成树与最小生成树 | Nuclear_pasta&#39;s algorithm blog</title>
+<link rel="shortcut icon" href="https://NuclearPasta3579.github.io//favicon.ico?v=1691492062355">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://NuclearPasta3579.github.io//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="生成树与最小生成树 | Nuclear_pasta&#39;s algorithm blog - Atom Feed" href="https://NuclearPasta3579.github.io//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="【定义】
+生成树
+以一张无向图,用无向图的部分边及所有点。
+最小生成树
+其中所有边之和最小的树是最小生成树。
+次小生成树
+其中所有边之和第二小的树是最小生成树。
+分为非严格次小生成树和严格次小生成树，其中非严格次小生成树的边权和允许和最小生..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://NuclearPasta3579.github.io/">
+  <img class="avatar" src="https://NuclearPasta3579.github.io//images/avatar.png?v=1691492062355" alt="">
+  </a>
+  <h1 class="site-title">
+    Nuclear_pasta&#39;s algorithm blog
+  </h1>
+  <p class="site-description">
+    Algorithm bolg
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              生成树与最小生成树
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-08-08
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="定义">【定义】</h1>
+<h2 id="生成树">生成树</h2>
+<p>以一张无向图,用无向图的部分边及所有点。</p>
+<h2 id="最小生成树">最小生成树</h2>
+<p>其中所有边之和最小的树是最小生成树。</p>
+<h2 id="次小生成树">次小生成树</h2>
+<p>其中所有边之和第二小的树是最小生成树。<br>
+分为非严格次小生成树和严格次小生成树，其中非严格次小生成树的边权和<strong>允许</strong>和最小生成树<strong>相同</strong>，而严格次小生成树<strong>不许相同</strong></p>
+<h1 id="最小生成树算法">【最小生成树算法】</h1>
+<h2 id="kruskal">kruskal</h2>
+<p>将边按边权从小到大进行排序，然后遍历每条边。<br>
+对于一条边，当且仅当边两端未联通时加入此边，通常用<a href="https://www.luogu.com.cn/blog/lcm15987/zhou-ji-zhi-bing-zha-ji">并查集</a>存储联通关系。</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+long long n,m,ans=0,s=0;
+long long u,v,w;
+long long b[200003],r[200003];
+struct edge{
+    long long st,ed,len;
+}e[200001];
+bool ps(edge x,edge y){
+    return x.len&lt;y.len;
+}
+long long find(long long x){
+    if(b[x]!=x)return b[x]=find(b[x]);
+    return b[x];
+}
+void get_in(long long x,long long y,long long k)
+{
+    long long u=find(x),v=find(y);
+    if(u==v)return;
+    ans+=k;
+    s++;
+    if(r[u]&gt;r[v])b[v]=u;
+    else if(r[u]&lt;r[v])b[u]=v;
+    else{
+        b[v]=u;
+        r[u]++;
+    }
+}
+int main(){
+    scanf(&quot;%lld %lld&quot;,&amp;n,&amp;m);
+    for(long long i=1;i&lt;=n;i++)
+        b[i]=i;
+    for(long long i=1;i&lt;=m;i++){
+        scanf(&quot;%lld%lld%lld&quot;,&amp;e[i].st,&amp;e[i].ed,&amp;e[i].len);
+    }
+    sort(e+1,e+m+1,ps);
+    for(long long i=1;i&lt;=m;i++){
+        if(s==n-1)break;
+        get_in(e[i].st,e[i].ed,e[i].len);
+    }
+    if(s==n-1)
+        printf(&quot;%lld\n&quot;,ans);
+    else
+        printf(&quot;orz\n&quot;);
+    return 0;
+}
+</code></pre>
+<h2 id="prim">prim</h2>
+<p>从一个点开始，选取一个集连出的边中最小的边，然后将边的另一端加入集，实现是边权会存入边中。</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;queue&gt;
+#include&lt;vector&gt;
+#include&lt;cstring&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+unsigned long long n,m,s,t,u,v,w,dist[500001];
+bool vis[500001];
+struct edge{
+	unsigned long long ed,len;
+	
+};
+bool operator&lt;(edge mk,edge k){
+		return mk.len&gt;k.len;
+	}
+vector&lt;edge&gt;e[500001];
+priority_queue&lt;edge&gt;q;
+void Dijkstra(unsigned long long begin){
+	memset(dist,0x3f3f3f3f,sizeof(dist));
+	memset(vis,false,sizeof(vis));
+	q.push(edge{begin,0});
+	dist[begin]=0;
+	while(!q.empty()){
+		edge d=q.top();
+		q.pop();
+		if(vis[d.ed])continue;
+		vis[d.ed]=true;
+		for(unsigned long long i=0;e[d.ed].size()&gt;i;i++){
+			if(dist[e[d.ed][i].ed]&gt;e[d.ed][i].len&amp;&amp;!vis[e[d.ed][i].ed]){
+				dist[e[d.ed][i].ed]=e[d.ed][i].len;
+				q.push(edge{e[d.ed][i].ed,dist[e[d.ed][i].ed]});
+			}
+		}
+	}
+}
+int main(){
+	scanf(&quot;%llu%llu&quot;,&amp;n,&amp;m);
+	for(unsigned long long i=1;m&gt;=i;i++){
+		scanf(&quot;%llu%llu%llu&quot;,&amp;u,&amp;v,&amp;w);
+		e[u].push_back(edge{v,w});
+		e[v].push_back(edge{u,w});
+	}
+	Dijkstra(1);
+	for(unsigned long long i=1;i&lt;=n;i++){
+	    if(!vis[i]){printf(&quot;orz&quot;);return 0;}
+	    else s+=dist[i];
+	}
+	printf(&quot;%llu\n&quot;,s);
+	return 0;
+}
+</code></pre>
+<h1 id="常见题型">【常见题型】</h1>
+<h2 id="1裸最小生成树与较为简单的变形">1.裸最小生成树与较为简单的变形</h2>
+<h3 id="对应题目">对应题目</h3>
+<ol>
+<li><a href="https://www.luogu.com.cn/problem/P3366">【模板】最小生成树</a></li>
+<li><a href="https://www.luogu.com.cn/problem/T243516">安慰奶牛</a></li>
+<li><a href="https://www.luogu.com.cn/problem/T243505">北极通讯网络</a></li>
+<li><a href="https://www.luogu.com.cn/problem/T243518">构造完全图</a></li>
+<li><a href="https://www.luogu.com.cn/problem/P2872">[USACO07DEC]Building Roads S</a></li>
+<li><a href="https://www.luogu.com.cn/problem/T243511">灌溉农田</a></li>
+<li><a href="https://www.luogu.com.cn/problem/P2330">[SCOI2005]繁忙的都市</a></li>
+<li><a href="https://www.luogu.com.cn/problem/P2820">局域网</a></li>
+<li><a href="https://codeforces.com/edu/course/2/lesson/7/2/practice/contest/289391/problem/E">E. Spanning Tree</a></li>
+<li><a href="https://codeforces.com/edu/course/2/lesson/7/2/practice/contest/289391/problem/F">F. Dense spanning tree</a></li>
+<li><a href="https://codeforces.com/edu/course/2/lesson/7/2/practice/contest/289391/problem/G">G. No refuel</a></li>
+<li><a href="https://codeforces.com/edu/course/2/lesson/7/2/practice/contest/289391/problem/H">H. Oil business</a></li>
+</ol>
+<h3 id="思路">思路</h3>
+<p>简单地想一想怎么用最小生成树算法做即可。</p>
+<h2 id="2次小生成树">2.次小生成树</h2>
+<h3 id="对应题目-2">对应题目</h3>
+<ol>
+<li><a href="https://www.luogu.com.cn/problem/T243521">秘密牛奶运输</a></li>
+</ol>
+<h3 id="思路-2">思路</h3>
+<p>求出最小生成树后，依次加入非树边，然后去掉对应环中其他边中边权最大的，求严格次小生成树时最大边若与非树边边权相同去次大边。<br>
+优化后将变得飞快，本博主用的是倍增。</p>
+<h2 id="3较为困难的变形">3.较为困难的变形</h2>
+<h3 id="对应题目-3">对应题目</h3>
+<ol>
+<li><a href="https://www.luogu.com.cn/problem/P1967"> [NOIP2013 提高组] 货车运输</a></li>
+<li><a href="https://www.luogu.com.cn/problem/P2619">[国家集训队]Tree I</a></li>
+<li><a href="https://www.luogu.com.cn/problem/P4208">[JSOI2008]最小生成树计数</a></li>
+<li><a href="https://www.luogu.com.cn/problem/P2573">[SCOI2012]滑雪</a></li>
+</ol>
+<h3 id="思路-3">思路</h3>
+<p>思考最小生成树解。</p>
+<h1 id="例题精讲">【例题精讲】</h1>
+<p>题目：<a href="https://www.luogu.com.cn/problem/P2573">[SCOI2012]滑雪</a><br>
+方法：使用<code>Prim</code>算法，当一点高度比另一点高时遍历将另一点加入集，高度高的优先遍历，其次才是对应边权小的。</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;queue&gt;
+#include&lt;vector&gt;
+#include&lt;cstring&gt;
+using namespace std;
+int n,t,m; 
+int u,v,w,dist[100001],h[100001];
+bool vis[100001];
+struct edge{
+	int ed,len;
+};
+bool operator&lt;(edge mk,edge k){
+    if(h[mk.ed]!=h[k.ed])return h[mk.ed]&lt;h[k.ed];
+	return mk.len&gt;k.len;
+}
+long long ans=0;
+vector&lt;edge&gt;e[100001];
+priority_queue&lt;edge&gt;q;
+void Dijkstra(int begin){
+	memset(dist,0x3f3f3f3f,sizeof(dist));
+	memset(vis,false,sizeof(vis));
+	q.push(edge{begin,0});
+	dist[begin]=0;
+	while(!q.empty()){
+		edge d=q.top();
+		q.pop();
+		if(vis[d.ed])continue;
+		vis[d.ed]=true;
+		ans+=1ll*dist[d.ed];
+		t++;
+		for(int i=0;e[d.ed].size()&gt;i;i++){
+			if(h[d.ed]&gt;=h[e[d.ed][i].ed]&amp;&amp;dist[e[d.ed][i].ed]&gt;e[d.ed][i].len&amp;&amp;!vis[e[d.ed][i].ed]){
+				dist[e[d.ed][i].ed]=e[d.ed][i].len;
+				q.push(edge{e[d.ed][i].ed,dist[e[d.ed][i].ed]});
+			}
+		}
+	}
+}
+int main(){
+	scanf(&quot;%d%d&quot;,&amp;n,&amp;m);
+	for(int i=1;i&lt;=n;i++){
+	    scanf(&quot;%d&quot;,&amp;h[i]);
+	}
+	for(int i=1;i&lt;=m;i++){
+	    scanf(&quot;%d%d%d&quot;,&amp;u,&amp;v,&amp;w);
+	    e[u].push_back(edge{v,w});
+	    e[v].push_back(edge{u,w});
+	}
+	Dijkstra(1);
+	printf(&quot;%d %lld\n&quot;,t,ans);
+	return 0;
+}
+</code></pre>
+<p><a href="https://cdn.luogu.com.cn/upload/image_hosting/momg4ciq.png">AC记录</a></p>
+<h1 id="总结">【总结】</h1>
+<p>最小生成树是一种图论的问题，通过<code>Kruskal</code>和<code>Prim</code>我们可以想出解来。</p>
+<h1 id="拓展">【拓展】</h1>
+<p><a href="https://www.luogu.com.cn/training/256184">尽在此处。</a></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%AE%9A%E4%B9%89">【定义】</a>
+<ul>
+<li><a href="#%E7%94%9F%E6%88%90%E6%A0%91">生成树</a></li>
+<li><a href="#%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91">最小生成树</a></li>
+<li><a href="#%E6%AC%A1%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91">次小生成树</a></li>
+</ul>
+</li>
+<li><a href="#%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91%E7%AE%97%E6%B3%95">【最小生成树算法】</a>
+<ul>
+<li><a href="#kruskal">kruskal</a></li>
+<li><a href="#prim">prim</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B8%B8%E8%A7%81%E9%A2%98%E5%9E%8B">【常见题型】</a>
+<ul>
+<li><a href="#1%E8%A3%B8%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91%E4%B8%8E%E8%BE%83%E4%B8%BA%E7%AE%80%E5%8D%95%E7%9A%84%E5%8F%98%E5%BD%A2">1.裸最小生成树与较为简单的变形</a>
+<ul>
+<li><a href="#%E5%AF%B9%E5%BA%94%E9%A2%98%E7%9B%AE">对应题目</a></li>
+<li><a href="#%E6%80%9D%E8%B7%AF">思路</a></li>
+</ul>
+</li>
+<li><a href="#2%E6%AC%A1%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91">2.次小生成树</a>
+<ul>
+<li><a href="#%E5%AF%B9%E5%BA%94%E9%A2%98%E7%9B%AE-2">对应题目</a></li>
+<li><a href="#%E6%80%9D%E8%B7%AF-2">思路</a></li>
+</ul>
+</li>
+<li><a href="#3%E8%BE%83%E4%B8%BA%E5%9B%B0%E9%9A%BE%E7%9A%84%E5%8F%98%E5%BD%A2">3.较为困难的变形</a>
+<ul>
+<li><a href="#%E5%AF%B9%E5%BA%94%E9%A2%98%E7%9B%AE-3">对应题目</a></li>
+<li><a href="#%E6%80%9D%E8%B7%AF-3">思路</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E4%BE%8B%E9%A2%98%E7%B2%BE%E8%AE%B2">【例题精讲】</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">【总结】</a></li>
+<li><a href="#%E6%8B%93%E5%B1%95">【拓展】</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://NuclearPasta3579.github.io/post/bing-cha-ji/">
+              <h3 class="post-title">
+                并查集
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'd3fea9ea0eaef57f738e',
+    clientSecret: '93ea1d6a6d0695e7e635e3fc856082d56a50f2b9',
+    repo: 'nuclearpasta3579.github.io',
+    owner: 'NuclearPasta3579',
+    admin: ['NuclearPasta3579'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://NuclearPasta3579.github.io//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

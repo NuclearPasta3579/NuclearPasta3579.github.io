@@ -1,0 +1,368 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>组合 | Nuclear_pasta&#39;s algorithm blog</title>
+<link rel="shortcut icon" href="https://NuclearPasta3579.github.io//favicon.ico?v=1691492062355">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://NuclearPasta3579.github.io//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="组合 | Nuclear_pasta&#39;s algorithm blog - Atom Feed" href="https://NuclearPasta3579.github.io//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="1.组合数
+组合数 (^n_m) 的意义为在 n 个元素中选 m 个元素的方法数（不考虑顺序），常见求法有三种：
+
+转移公式 (n_m)=({n-1}m)+(^{n-1}{m-1})，预处理 O(nm)，询问 O(1)，空间复杂度 O(nm..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://NuclearPasta3579.github.io/">
+  <img class="avatar" src="https://NuclearPasta3579.github.io//images/avatar.png?v=1691492062355" alt="">
+  </a>
+  <h1 class="site-title">
+    Nuclear_pasta&#39;s algorithm blog
+  </h1>
+  <p class="site-description">
+    Algorithm bolg
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              组合
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-08-08
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="1组合数">1.组合数</h1>
+<p>组合数 (^n_m) 的意义为在 n 个元素中选 m 个元素的方法数（不考虑顺序），常见求法有三种：</p>
+<ol>
+<li>转移公式 (<sup>n_m)=(</sup>{n-1}<em>m)+(^{n-1}</em>{m-1})，预处理 O(nm)，询问 O(1)，空间复杂度 O(nm)。</li>
+<li>公式 (^n_m)=n \cdot (n-1) \cdot (n-2)…(n-m+1)\div m!，询问 O(m)，空间复杂度 O(1)。</li>
+<li>公式 (^n_m) = \frac {n!} {m!(n-m)!},预处理复杂度 O(n)，询问 O(1)，空间复杂度 O(n)。</li>
+</ol>
+<p>*注：取模时第二种方法和第三种方法求解涉及逆元，详情看<a href="https://nuclearpasta3579.github.io/post/shu-lun">数论篇</a><br>
+例题：<a href="https://www.luogu.com.cn/problem/P1641">P1641 [SCOI2010] 生成字符串</a><br>
+我们可以将这一位为 1 看作右上走，这一位为 0 看作右下走，求从 (0,0) 到 (n-m,n+m) 的方法，有 (^{n+m}<em>m) 种。据题意，过程中不能到 y=-1 的点，排除的路线相当于从 (0,-2) 到 (n-m,n+m) 的路线，有 (^{n+m}</em>{m-1}) 种，故共 (<sup>{n+m}_m)-(</sup>{n+m}_{m-1}) 种。<br>
+使用第二种或第三种方法求解可通过。</p>
+<h1 id="2卢卡斯定理">2.卢卡斯定理</h1>
+<p>当 p 为质数时，根据卢卡斯定理，(^n_m)\equiv (^{n \bmod p}<em>{m \bmod p})\cdot (^{[\frac{n}{p}]}</em>{[\frac{m}{p}]})(\bmod p)。<br>
+使用卢卡斯定理会使时间复杂度变为 O(p\log_p n)。<br>
+模板题代码：</p>
+<pre><code>#include&lt;cstdio&gt;
+using namespace std;
+inline long long exgcd(long long x,long long y,long long &amp;a,long long &amp;b){
+    if(y==0){
+    	a=1,b=0;
+		return x;
+	}
+    else {
+    	long long plok=exgcd(y,x%y,b,a);
+    	b-=x/y*a;
+    	return plok;
+    }
+}
+long long n,p,m,ans=0,t;
+long long s[5000009],l[5000009],a[5000009];
+inline void cin(long long &amp;x){
+    x=0;
+    char c=' ';
+    bool f=false;
+    while((c&lt;'0'||c&gt;'9')&amp;&amp;c!='-')c=getchar();
+    if(c=='-'){
+        f=true;
+        c=getchar();
+    }
+    while(c&lt;='9'&amp;&amp;c&gt;='0'){
+        x=x*10+c-'0';
+        c=getchar();
+    }
+    if(f)x=-x;
+}
+inline long long lucus(long long n,long long m){
+    if(m&gt;n)return 0;
+    else if(n&gt;=p)return lucus(n/p,m/p)*lucus(n%p,m%p)%p;
+    else return s[n]*l[m]%p*l[n-m]%p;
+}
+int main(){
+    cin(t);
+    while(t--){
+    cin(n),cin(m),cin(p);
+    s[0]=1;
+    n+=m;
+    for(int i=1;i&lt;p;i++){
+        s[i]=s[i-1]*i%p;
+    }
+    long long y;
+    l[p-1] =p-1;//威尔逊定理
+    for(int i=p-2;i&gt;=0;i--){
+        l[i]=l[i+1]*(i+1)%p;
+    }
+    printf(&quot;%lld\n&quot;,lucus(n,m));
+    }
+    return 0;
+}
+</code></pre>
+<h1 id="3容斥">3.容斥</h1>
+<p>容斥其实只是一种思想，在数学的学习中也能学到。<br>
+较为专业的解释其实非常简单。<br>
+容斥的基本形式的解释方式为：对于若干集合 A_1,A_2,...,A_n，有 |A_1\cup A_2 \cup A_3 \cup A_4 \cup A_5 ...A_n|=\sum^{n}<em>{i=1}\sum (-1)^{i-1}\times |A</em>{a_1}\cap A_{a_2}\cap...A_{a_n}|。具体推导可以用韦恩图。<br>
+例题：<a href="https://www.luogu.com.cn/problem/P1450">P1450 [HAOI2008] 硬币购物</a><br>
+这道题先用 <code>dp</code> 可以进行预处理，设 dp_i 为总价为 i 而每种货币可无限制使用的方法数，则可以递推，复杂度 O(\max s)，可以直接默认 \max x=10^5。<br>
+对于每个询问，我们枚举其中若干种货币必然使用超限的方法数（i 硬币超限对应先用掉 d_i+1 枚硬币 i），利用容斥原理可以得解（O(n)）。<br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+using namespace std;
+long long c[5],n,d[5],s;
+long long dp[100005],ans;
+inline void srh(long long k,long long res,long long cnt){
+    ans+=(cnt%2==0)?dp[res]:-dp[res];
+    for(int i=k+1;i&lt;=4;i++){
+        if(res&gt;=c[i]*(d[i]+1)){
+            srh(i,res-c[i]*(d[i]+1),cnt+1);
+        }
+    }
+}
+int main(){
+    scanf(&quot;%lld %lld %lld %lld%lld&quot;,&amp;c[1],&amp;c[2],&amp;c[3],&amp;c[4],&amp;n);
+    dp[0]=1;
+    for(int i=1;i&lt;=4;i++){
+        for(int j=c[i];j&lt;=100000;j++){
+            dp[j]+=dp[j-c[i]];
+        }
+    }
+    for(int i=1;i&lt;=n;i++){
+        scanf(&quot;%lld %lld %lld %lld %lld&quot;,&amp;d[1],&amp;d[2],&amp;d[3],&amp;d[4],&amp;s);
+        ans=0,srh(0,s,0);
+        printf(&quot;%lld\n&quot;,ans);
+    }
+}
+</code></pre>
+<h1 id="4卡特兰数">4.卡特兰数</h1>
+<p>卡特兰数指从 (1,1) 到 (n,n) 使横坐标不大于纵坐标的方法数。<br>
+卡特兰数的一种求法为 (<em>n<sup>{2n})-(</sup>{2n}</em>{n-1}) 或 \frac{(^{2n}<em>n)}{n+1}（O(n)），另外，设 dp</em>{i,j} 为从 (1,1) 到 (i,j) 的路程数，公式 dp_{i,j}=dp_{i-1,j-1}+dp_{i,j-1}，则 dp_{n,n} 即为所求（O(n^2)）。<br>
+裸题：<a href="https://www.luogu.com.cn/problem/P1044">栈</a><br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+using namespace std;
+inline long long exgcd(long long x,long long y,long long &amp;a,long long &amp;b){
+    if(y==0){
+    	a=1,b=0;
+		return x;
+	}
+    else {
+    	long long plok=exgcd(y,x%y,b,a);
+    	b-=x/y*a;
+    	return plok;
+    }
+}
+long long n,p=999911659,ans=0;
+long long s[49],l[49];
+inline void cin(long long &amp;x){
+    x=0;
+    char c=' ';
+    bool f=false;
+    while((c&lt;'0'||c&gt;'9')&amp;&amp;c!='-')c=getchar();
+    if(c=='-'){
+        f=true;
+        c=getchar();
+    }
+    while(c&lt;='9'&amp;&amp;c&gt;='0'){
+        x=x*10+c-'0';
+        c=getchar();
+    }
+    if(f)x=-x;
+}
+int main(){
+    cin(n);
+    s[0]=1;
+    if(n==1){
+        printf(&quot;1\n&quot;);
+        return 0;
+    }
+    for(int i=1;i&lt;=2*n;i++){
+        s[i]=s[i-1]*i%p;
+    }
+    long long y;
+    exgcd(s[2*n],p,l[2*n],y);
+    l[2*n]=(l[2*n]%p+p)%p;
+    for(int i=2*n-1;i&gt;=1;i--){
+        l[i]=l[i+1]*(i+1)%p;
+    }
+    printf(&quot;%lld\n&quot;,(p+s[2*n]*l[n]%p*l[n]%p-s[2*n]*l[n-1]%p*l[n+1]%p)%p);
+    return 0;
+}
+
+#include&lt;cstdio&gt;
+using namespace std;
+int n,dp[20][20];
+int main(){
+    scanf(&quot;%d&quot;,&amp;n);
+    dp[0][0]=1;
+    for(int i=1;i&lt;=n;i++){
+        for(int j=0;j&lt;=i;j++){
+            dp[i][j]=dp[i][j-1];//出栈
+            if(j&lt;i)dp[i][j]+=dp[i-1][j];//入栈
+        }
+    }
+    printf(&quot;%d\n&quot;,dp[n][n]);
+    return 0;
+}
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1%E7%BB%84%E5%90%88%E6%95%B0">1.组合数</a></li>
+<li><a href="#2%E5%8D%A2%E5%8D%A1%E6%96%AF%E5%AE%9A%E7%90%86">2.卢卡斯定理</a></li>
+<li><a href="#3%E5%AE%B9%E6%96%A5">3.容斥</a></li>
+<li><a href="#4%E5%8D%A1%E7%89%B9%E5%85%B0%E6%95%B0">4.卡特兰数</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://NuclearPasta3579.github.io/post/shu-lun/">
+              <h3 class="post-title">
+                数论
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'd3fea9ea0eaef57f738e',
+    clientSecret: '93ea1d6a6d0695e7e635e3fc856082d56a50f2b9',
+    repo: 'nuclearpasta3579.github.io',
+    owner: 'NuclearPasta3579',
+    admin: ['NuclearPasta3579'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://NuclearPasta3579.github.io//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

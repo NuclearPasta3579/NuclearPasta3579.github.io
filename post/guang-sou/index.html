@@ -1,0 +1,288 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>广搜 | Nuclear_pasta&#39;s algorithm blog</title>
+<link rel="shortcut icon" href="https://NuclearPasta3579.github.io//favicon.ico?v=1691492062355">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://NuclearPasta3579.github.io//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="广搜 | Nuclear_pasta&#39;s algorithm blog - Atom Feed" href="https://NuclearPasta3579.github.io//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="广搜是最基础且其中最快的方法，每扩展到一个点就把它加入队列进行扩展，然后不再更改，时间复杂度 O(|V|+|E|)，但只能处理所有边权为 1 的最短路，当出现边权为 0 的边时，为了保证有序性，需将对应点放在队首，于是有了双端队列广搜。
+广..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://NuclearPasta3579.github.io/">
+  <img class="avatar" src="https://NuclearPasta3579.github.io//images/avatar.png?v=1691492062355" alt="">
+  </a>
+  <h1 class="site-title">
+    Nuclear_pasta&#39;s algorithm blog
+  </h1>
+  <p class="site-description">
+    Algorithm bolg
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              广搜
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-08-08
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>广搜是最基础且其中最快的方法，每扩展到一个点就把它加入队列进行扩展，然后不再更改，时间复杂度 O(|V|+|E|)，但只能处理所有边权为 1 的最短路，当出现边权为 0 的边时，为了保证有序性，需将对应点放在队首，于是有了双端队列广搜。<br>
+广搜代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;vector&gt;
+#include&lt;cstring&gt;
+#include&lt;queue&gt;
+using namespace std;
+const int maxn=1000005;
+int s[1000005],n,m;
+bool vis[maxn];
+struct edge{
+	int end,len;
+}; 
+vector&lt;edge&gt;map[maxn];
+queue&lt;int&gt;q;
+inline void distance_srh(){
+	q.push(1);
+	memset(s,0x3f3f3f3f,sizeof(s));
+	s[1]=0;
+	while(!q.empty()){
+		int d=q.front();
+		q.pop();
+		if(vis[d])continue;
+		vis[d]=true;
+		for(int i=0;map[d].size()&gt;i;i++){
+			if(s[map[d][i].end]==0x3f3f3f3f||s[map[d][i].end]&gt;s[d]+map[d][i].len){
+				s[map[d][i].end]=s[d]+map[d][i].len;
+				q.push(map[d][i].end);
+				continue;
+			}
+		}
+	}
+}
+int main(){
+    scanf(&quot;%d%d&quot;,&amp;n,&amp;m);
+    for(int i=1;m&gt;=i;i++){
+    	int u,v;
+        scanf(&quot;%d%d&quot;,&amp;u,&amp;v);
+        edge t;
+        t.end=v;
+		t.len=1;
+        map[u].push_back(t);
+        t.end=u;
+        map[v].push_back(t);
+    }
+    distance_srh();
+    for(int i=1;n&gt;=i;i++){
+        printf(&quot;%d\n&quot;,s[i]);
+    }
+    return 0;
+}
+
+</code></pre>
+<p>精讲：做<a href="https://www.luogu.com.cn/problem/P1144">最短路计数</a>时，如果更新最短路，则使最短路条数为用来更新此点最短路的最短路条数，遍历到最短路与扩展长度相同时，对应点最短路条数加上此点最短路条数。<br>
+代码：</p>
+<pre><code>#include&lt;cstdio&gt;
+#include&lt;vector&gt;
+#include&lt;cstring&gt;
+#include&lt;queue&gt;
+using namespace std;
+const int maxn=1000005;
+int s[1000005],n,m,ans[1000005];
+bool vis[maxn];
+struct edge{
+	int end,len;
+}; 
+vector&lt;edge&gt;map[maxn];
+queue&lt;int&gt;q;
+inline void distance_srh(){
+	q.push(1);
+	memset(s,0x3f3f3f3f,sizeof(s));
+	s[1]=0;
+	ans[1]=1;
+	while(!q.empty()){
+		int d=q.front();
+		q.pop();
+		if(vis[d])continue;
+		vis[d]=true;
+		for(int i=0;map[d].size()&gt;i;i++){
+			if(s[map[d][i].end]==0x3f3f3f3f||s[map[d][i].end]&gt;s[d]+map[d][i].len){
+				s[map[d][i].end]=s[d]+map[d][i].len;
+				q.push(map[d][i].end);
+				ans[map[d][i].end]=ans[d];
+				continue;
+			}
+			if(s[d]+map[d][i].len==s[map[d][i].end]){
+				ans[map[d][i].end]=(ans[d]+ans[map[d][i].end])%100003;
+			}
+		}
+	}
+}
+int main(){
+    scanf(&quot;%d%d&quot;,&amp;n,&amp;m);
+    for(int i=1;m&gt;=i;i++){
+    	int u,v;
+        scanf(&quot;%d%d&quot;,&amp;u,&amp;v);
+        edge t;
+        t.end=v;
+		t.len=1;
+        map[u].push_back(t);
+        t.end=u;
+        map[v].push_back(t);
+    }
+    distance_srh();
+    for(int i=1;n&gt;=i;i++){
+        printf(&quot;%d\n&quot;,ans[i]);
+    }
+    return 0;
+}
+</code></pre>
+<p><a href="https://www.luogu.com.cn/training/211360">练习</a><br>
+其中有题卡常，不知道如何防卡常的请移步<a href="https://www.luogu.com.cn/blog/lcm15987/FKCBK">这里</a></p>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'd3fea9ea0eaef57f738e',
+    clientSecret: '93ea1d6a6d0695e7e635e3fc856082d56a50f2b9',
+    repo: 'nuclearpasta3579.github.io',
+    owner: 'NuclearPasta3579',
+    admin: ['NuclearPasta3579'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://NuclearPasta3579.github.io//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

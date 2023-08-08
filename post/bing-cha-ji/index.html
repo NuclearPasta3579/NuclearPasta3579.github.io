@@ -1,0 +1,372 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>并查集 | Nuclear_pasta&#39;s algorithm blog</title>
+<link rel="shortcut icon" href="https://NuclearPasta3579.github.io//favicon.ico?v=1691492062355">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://NuclearPasta3579.github.io//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="并查集 | Nuclear_pasta&#39;s algorithm blog - Atom Feed" href="https://NuclearPasta3579.github.io//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="【集】
+定义
+一种特殊的，抽象的容器，会包含多个互不相同的元素。
+交集
+指两个集之间的重复部分。
+并集
+指将两个集合并之后的结果，通常要去掉并集使其符合并查集的特点。
+【并查集】
+定义
+一组集，两两并集为空。
+实现
+初始化时每个元素有一个指..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://NuclearPasta3579.github.io/">
+  <img class="avatar" src="https://NuclearPasta3579.github.io//images/avatar.png?v=1691492062355" alt="">
+  </a>
+  <h1 class="site-title">
+    Nuclear_pasta&#39;s algorithm blog
+  </h1>
+  <p class="site-description">
+    Algorithm bolg
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              并查集
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-08-08
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="集">【集】</h1>
+<h2 id="定义">定义</h2>
+<p>一种特殊的，抽象的容器，会包含多个互不相同的元素。</p>
+<h2 id="交集">交集</h2>
+<p>指两个集之间的重复部分。</p>
+<h2 id="并集">并集</h2>
+<p>指将两个集合并之后的结果，通常要去掉并集使其符合并查集的特点。</p>
+<h1 id="并查集">【并查集】</h1>
+<h2 id="定义-2">定义</h2>
+<p>一组集，两两并集为空。</p>
+<h2 id="实现">实现</h2>
+<p>初始化时每个元素有一个指针，开始连向自己。<br>
+查询时，不断到达指针指向的点，直到指针连向自己。<br>
+合并时一个点查到的结点的指针指向另一个点对应的点。</p>
+<h2 id="优化">优化</h2>
+<ol>
+<li>合并时层数高的连向层数低的。</li>
+<li>每次遍历时，对应节点指向连向点查到的节点。</li>
+</ol>
+<h2 id="代码">代码</h2>
+<p>如下的代码只是其中一个版本，后面做题时的代码会有多个版本，但都是本人打的。</p>
+<pre><code class="language-cpp">struct Node_in_bcj{
+    int r;
+    Node_in_bcj *fa=NULL;
+}b[1000001];
+void init(int _n){
+    for(int i=1;i&lt;=_n;i++){
+        b[i].r=1;
+        b[i].fa=&amp;b[i];
+    }
+}
+Node_in_bcj* find(Node_in_bcj *cur){
+    if(cur-&gt;fa==cur)return cur;
+    else return cur-&gt;fa=find(cur-&gt;fa);
+}
+void Union(int x,int y){
+    Node_in_bcj *up=find(&amp;b[x]),*vp=find(&amp;b[y]);
+    if(up==vp)return;
+    if(up-&gt;r&gt;vp-&gt;r){
+        vp-&gt;fa=up;
+    }
+    else if(up-&gt;r&lt;vp-&gt;r){
+        up-&gt;fa=vp;
+    }
+    else{
+        vp-&gt;fa=up;
+        up-&gt;r++;
+    }
+}
+int query(int x){
+	return find(&amp;b[x])-&amp;b[0];
+}
+</code></pre>
+<h1 id="题型模块">【题型/模块】</h1>
+<h2 id="基础型">基础型</h2>
+<p>较为基础的并查集，顺着做就可以了。</p>
+<h2 id="顺序更改型">顺序更改型</h2>
+<p>对应着一个<strong>Offline</strong>算法，你需要改变并查集的查询和合并顺序。</p>
+<h2 id="带权型前缀和型">带权型&amp;&amp;前缀和型</h2>
+<p>用点上的数组记录边权或差分，然后路径压缩时进行相加。<br>
+注意要防止过多重复加。</p>
+<h2 id="可删除并查集">可删除并查集</h2>
+<p>敬请期待</p>
+<h1 id="题目精讲">【题目精讲】</h1>
+<p><a href="https://www.luogu.com.cn/problem/P5937">题目传送门</a></p>
+<h2 id="题意概括">题意概括</h2>
+<ul>
+<li>给定 m 个子段中 1 的个数的奇偶信息；</li>
+<li>你需要求出一个数 i 使得有长为 n 的01串满足前 i 条，但没有有长为 n 的01串满足前 i+1 条。</li>
+<li>如果长为 n 的01串满足所有条件，输出 m。</li>
+</ul>
+<h2 id="题目分析">题目分析</h2>
+<p>我们需要运用前缀和思想，将 i 号元素拆开，分别代表前 i 位 1 的个数的奇偶性。<br>
+然后利用并查集，对应同一个并查集的情况同时成立，若有 j 使得前 j 位一的个数为偶数的情况对应的元素与对应奇数的元素在同一并查集内，输出 i-1。</p>
+<h2 id="代码-2">代码</h2>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;map&gt;
+using namespace std;
+const int M=5e4+9;
+struct Node_in_bcj{
+    int r;
+    Node_in_bcj *fa;
+}b[M*6];
+int n,m,u,v,cnt;
+map&lt;int,Node_in_bcj*&gt;mp[2];
+void create_account(int x){
+    cnt++;
+    mp[0][x]=&amp;b[cnt];
+    mp[0][x]-&gt;r=1;
+    mp[0][x]-&gt;fa=&amp;b[cnt];
+    cnt++;
+    mp[1][x]=&amp;b[cnt];
+    mp[1][x]-&gt;r=1;
+    mp[1][x]-&gt;fa=&amp;b[cnt];
+}
+Node_in_bcj* find(Node_in_bcj *cur){
+    if(cur-&gt;fa==cur)return cur;
+    else return cur-&gt;fa=find(cur-&gt;fa);
+}
+void Union(Node_in_bcj* x,Node_in_bcj* y){
+    Node_in_bcj *up=find(x),*vp=find(y);
+    if(up==vp)return;
+    if(up-&gt;r&gt;vp-&gt;r){
+        vp-&gt;fa=up;
+    }
+    else if(up-&gt;r&lt;vp-&gt;r){
+        up-&gt;fa=vp;
+    }
+    else{
+        vp-&gt;fa=up;
+        up-&gt;r++;
+    }
+}
+string t;
+int main(){
+    scanf(&quot;%d %d&quot;,&amp;n,&amp;m);
+    for(int i=1;i&lt;=m;i++){
+        cin&gt;&gt;u&gt;&gt;v&gt;&gt;t;
+        if(u&gt;n||v&gt;n){
+            printf(&quot;%d\n&quot;,i-1);
+            return 0;
+        }
+        u--;
+        if(mp[0].count(u)==0)create_account(u);
+        if(mp[0].count(v)==0)create_account(v);
+        if(t==&quot;even&quot;){
+            Union(mp[0][u],mp[0][v]);
+            Union(mp[1][u],mp[1][v]);
+            if(find(mp[0][u])==find(mp[1][u])||find(mp[0][v])==find(mp[1][v])){
+                printf(&quot;%d\n&quot;,i-1);
+                return 0;
+            }
+        }
+        else{
+            Union(mp[1][u],mp[0][v]);
+            Union(mp[0][u],mp[1][v]);
+            if(find(mp[0][u])==find(mp[1][u])||find(mp[0][v])==find(mp[1][v])){
+                printf(&quot;%d\n&quot;,i-1);
+                return 0;
+            }
+        }
+    }
+    printf(&quot;%d\n&quot;,m);
+    return 0;
+}
+</code></pre>
+<h1 id="体会感悟">【体会感悟】</h1>
+<p>并查集是个较为出色的数据结构，可以针对很多的较为活的题。每个算法都有其特点，对应一类题目。</p>
+<h1 id="补充">【补充】</h1>
+<p><a href="https://www.luogu.com.cn/training/252444">它们在这里等你</a></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E9%9B%86">【集】</a>
+<ul>
+<li><a href="#%E5%AE%9A%E4%B9%89">定义</a></li>
+<li><a href="#%E4%BA%A4%E9%9B%86">交集</a></li>
+<li><a href="#%E5%B9%B6%E9%9B%86">并集</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B9%B6%E6%9F%A5%E9%9B%86">【并查集】</a>
+<ul>
+<li><a href="#%E5%AE%9A%E4%B9%89-2">定义</a></li>
+<li><a href="#%E5%AE%9E%E7%8E%B0">实现</a></li>
+<li><a href="#%E4%BC%98%E5%8C%96">优化</a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81">代码</a></li>
+</ul>
+</li>
+<li><a href="#%E9%A2%98%E5%9E%8B%E6%A8%A1%E5%9D%97">【题型/模块】</a>
+<ul>
+<li><a href="#%E5%9F%BA%E7%A1%80%E5%9E%8B">基础型</a></li>
+<li><a href="#%E9%A1%BA%E5%BA%8F%E6%9B%B4%E6%94%B9%E5%9E%8B">顺序更改型</a></li>
+<li><a href="#%E5%B8%A6%E6%9D%83%E5%9E%8B%E5%89%8D%E7%BC%80%E5%92%8C%E5%9E%8B">带权型&amp;&amp;前缀和型</a></li>
+<li><a href="#%E5%8F%AF%E5%88%A0%E9%99%A4%E5%B9%B6%E6%9F%A5%E9%9B%86">可删除并查集</a></li>
+</ul>
+</li>
+<li><a href="#%E9%A2%98%E7%9B%AE%E7%B2%BE%E8%AE%B2">【题目精讲】</a>
+<ul>
+<li><a href="#%E9%A2%98%E6%84%8F%E6%A6%82%E6%8B%AC">题意概括</a></li>
+<li><a href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90">题目分析</a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81-2">代码</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BD%93%E4%BC%9A%E6%84%9F%E6%82%9F">【体会感悟】</a></li>
+<li><a href="#%E8%A1%A5%E5%85%85">【补充】</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'd3fea9ea0eaef57f738e',
+    clientSecret: '93ea1d6a6d0695e7e635e3fc856082d56a50f2b9',
+    repo: 'nuclearpasta3579.github.io',
+    owner: 'NuclearPasta3579',
+    admin: ['NuclearPasta3579'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://NuclearPasta3579.github.io//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,340 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>树形DP | Nuclear_pasta&#39;s algorithm blog</title>
+<link rel="shortcut icon" href="https://NuclearPasta3579.github.io//favicon.ico?v=1691492062355">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://NuclearPasta3579.github.io//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="树形DP | Nuclear_pasta&#39;s algorithm blog - Atom Feed" href="https://NuclearPasta3579.github.io//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="1.树形DP
+指在树上进行动态规划。	    	
+常见转移方式：
+
+父节点转移到子节点；
+子节点转移到父节点。
+
+例如：
+
+在计算点的深度时，转移方程为 dp_v=dp_{fa}+len 是父节点转移到子节点的 DP。
+在计算点的子树权值时..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://NuclearPasta3579.github.io/">
+  <img class="avatar" src="https://NuclearPasta3579.github.io//images/avatar.png?v=1691492062355" alt="">
+  </a>
+  <h1 class="site-title">
+    Nuclear_pasta&#39;s algorithm blog
+  </h1>
+  <p class="site-description">
+    Algorithm bolg
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              树形DP
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-08-08
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="1树形dp">1.树形DP</h1>
+<p>指在树上进行动态规划。	    	<br>
+常见转移方式：</p>
+<ol>
+<li>父节点转移到子节点；</li>
+<li>子节点转移到父节点。</li>
+</ol>
+<p>例如：</p>
+<ul>
+<li>在计算点的深度时，转移方程为 dp_v=dp_{fa}+len 是父节点转移到子节点的 <code>DP</code>。</li>
+<li>在计算点的子树权值时，转移方程为 dp_v=cost_v+\sum dp_{son} 是子节点转移到父节点的 <code>DP</code>。</li>
+</ul>
+<h1 id="2换根思想">2.换根思想</h1>
+<p>换根思想是解决部分树上问题的常用思想。<br>
+针对询问从每个点出发时的贡献时，先解决一个点的贡献，再从这个点开始递推。<br>
+递推时，考虑根节点从父节点换成这个节点时，贡献的变化。<br>
+例：<a href="https://www.luogu.com.cn/problem/P2986">[USACO10MAR] Great Cow Gathering G</a><br>
+解决一个点的贡献：<br>
+dp_v=\sum dp_{son}+size_{son}<br>
+当根从父节点 fa 到子节点时，先都到父节点，再去子节点，减掉子节点子树上点多走两段，得 dp_v=dp_{fa}+size_{fa}-2\times size_v。<br>
+代码：</p>
+<pre><code>#include&lt;cstdio&gt;
+#include&lt;vector&gt;
+using namespace std;
+long long n,ans2=1e14,s[500007],c[500007],u,v,w,k[500007];
+vector&lt;long long&gt;e[500007];
+vector&lt;long long&gt;g[500007];
+long long srh1(long long nk,long long f){
+    c[nk]=0;
+    if(e[nk].size()==1&amp;&amp;nk!=1)return 0;
+    for(long long i=0;i&lt;e[nk].size();i++){
+        if(e[nk][i]!=f)c[nk]+=srh1(e[nk][i],nk)+s[e[nk][i]]*g[nk][i];
+    }
+    return c[nk];
+}
+long long srh2(long long nk,long long f){
+    s[nk]=k[nk];
+    for(long long i=0;i&lt;e[nk].size();i++){
+        if(e[nk][i]!=f)s[nk]+=srh2(e[nk][i],nk);
+    }
+    return s[nk];
+}
+void srh3(long long nk,long long f,long long len){
+    if(nk==1){
+        goto flknj;
+    }
+    c[nk]=c[f]+(s[f]-2*s[nk])*len;
+    s[nk]=s[f];
+    flknj:
+    if(c[nk]&lt;ans2){
+        ans2=c[nk];
+    }
+    for(long long i=0;i&lt;e[nk].size();i++){
+        if(e[nk][i]!=f)srh3(e[nk][i],nk,g[nk][i]);
+    }
+    
+}
+int main(){
+    scanf(&quot;%lld&quot;,&amp;n);
+    for(long long i=1;i&lt;=n;i++)scanf(&quot;%lld&quot;,&amp;k[i]);
+    for(long long i=1;i&lt;=n-1;i++){
+        scanf(&quot;%lld%lld%lld&quot;,&amp;u,&amp;v,&amp;w);
+        e[u].push_back(v);
+        e[v].push_back(u);
+        g[u].push_back(w);
+        g[v].push_back(w);
+    }
+    s[1]=srh2(1,0);
+    c[1]=srh1(1,0);
+    srh3(1,0,0);
+    printf(&quot;%lld&quot;,ans2);
+    return 0;
+}
+</code></pre>
+<h1 id="3基环树">3.基环树</h1>
+<p>基环树指只有一个环的无向图，解决基环树上的问题时通常从树上对于同一个问题的解法推导而来。<br>
+比如在解决<a href="https://www.luogu.com.cn/problem/P1453">城市环路</a>这道题时，先考虑如何在树上解决该问题，对应问题为<a href="https://www.luogu.com.cn/problem/P1352">没有上司的舞会</a>。<br>
+对于基环树来说，首先选择环上的一条边，当这条边不被考虑时，就是树上的问题，考虑后，边的两端至少有一端不选。<br>
+代码：</p>
+<pre><code>#include&lt;cstdio&gt;
+#include&lt;vector&gt;
+#include&lt;algorithm&gt; 
+using namespace std;
+vector&lt;int&gt;e[100009],g[100009];
+bool tree[100009],vis[100009],flg,incir[100009],tp[100009];
+int n,dp[100009][2],p[100009];
+double k;
+int ans;
+inline void sp_srh(int nk){
+    vis[nk]=true;
+    for(int i=0;i&lt;e[nk].size();i++){
+        if(!vis[e[nk][i]]){
+            tree[g[nk][i]]=true;
+            sp_srh(e[nk][i]);
+            if(flg)return;
+        }
+        else if(!tree[g[nk][i]]){
+            tp[g[nk][i]]=true;
+            return;
+        }
+    }
+}
+inline void srh(int nk,int l){
+    dp[nk][0]=0,dp[nk][1]=p[nk];
+    for(int i=0;i&lt;e[nk].size();i++){
+        if(!tp[g[nk][i]]&amp;&amp;e[nk][i]!=l){
+            srh(e[nk][i],nk);
+            dp[nk][0]+=max(dp[e[nk][i]][0],dp[e[nk][i]][1]);
+            dp[nk][1]+=dp[e[nk][i]][0];
+        }
+    }
+}
+int main(){
+    scanf(&quot;%d&quot;,&amp;n);
+    for(int i=0;i&lt;n;i++)scanf(&quot;%d&quot;,&amp;p[i]);
+    for(int i=1;i&lt;=n;i++){
+        int u,v;
+        scanf(&quot;%d%d&quot;,&amp;u,&amp;v);
+        e[u].push_back(v);
+        e[v].push_back(u);
+        g[u].push_back(i);
+        g[v].push_back(i);
+    }
+    scanf(&quot;%lf&quot;,&amp;k);
+    sp_srh(0);
+    for(int i=0;i&lt;n;i++){
+        for(int j=0;j&lt;g[i].size();j++){
+            if(tp[g[i][j]]){
+                srh(i,n);
+                ans=dp[i][0];
+                srh(e[i][j],n);
+                ans=max(ans,dp[e[i][j]][0]);
+                goto answ;
+            }
+        }
+    }
+    answ:
+    printf(&quot;%.1lf&quot;,k*ans);
+    return 0;
+}
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1%E6%A0%91%E5%BD%A2dp">1.树形DP</a></li>
+<li><a href="#2%E6%8D%A2%E6%A0%B9%E6%80%9D%E6%83%B3">2.换根思想</a></li>
+<li><a href="#3%E5%9F%BA%E7%8E%AF%E6%A0%91">3.基环树</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://NuclearPasta3579.github.io/post/sou-suo-you-hua/">
+              <h3 class="post-title">
+                搜索优化
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'd3fea9ea0eaef57f738e',
+    clientSecret: '93ea1d6a6d0695e7e635e3fc856082d56a50f2b9',
+    repo: 'nuclearpasta3579.github.io',
+    owner: 'NuclearPasta3579',
+    admin: ['NuclearPasta3579'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://NuclearPasta3579.github.io//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

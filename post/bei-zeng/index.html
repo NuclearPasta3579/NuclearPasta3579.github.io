@@ -1,0 +1,471 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>倍增 | Nuclear_pasta&#39;s algorithm blog</title>
+<link rel="shortcut icon" href="https://NuclearPasta3579.github.io//favicon.ico?v=1691492062355">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://NuclearPasta3579.github.io//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="倍增 | Nuclear_pasta&#39;s algorithm blog - Atom Feed" href="https://NuclearPasta3579.github.io//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="【倍增简介】
+一种算法，是指利用 2 的指数优化动态求答案的过程，使对应时间复杂度降至 \operatorname{O}(\log n)。
+【模块】
+1. 普通倍增
+在问题中运用 2 的指数即可。
+题目：
+快速幂
+将指数拆成 2 的幂的形式..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://NuclearPasta3579.github.io/">
+  <img class="avatar" src="https://NuclearPasta3579.github.io//images/avatar.png?v=1691492062355" alt="">
+  </a>
+  <h1 class="site-title">
+    Nuclear_pasta&#39;s algorithm blog
+  </h1>
+  <p class="site-description">
+    Algorithm bolg
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              倍增
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-08-08
+              </span>
+              <span>
+                9 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="倍增简介">【倍增简介】</h1>
+<p>一种算法，是指利用 2 的指数优化动态求答案的过程，使对应时间复杂度降至 \operatorname{O}(\log n)。</p>
+<h1 id="模块">【模块】</h1>
+<h2 id="1-普通倍增">1. 普通倍增</h2>
+<p>在问题中运用 2 的指数即可。<br>
+题目：<br>
+<a href="https://www.luogu.com.cn/problem/P1226">快速幂</a><br>
+将指数拆成 2 的幂的形式即可。</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#define int long long
+using namespace std;
+int a,b,p;
+inline int fast_times(int x,int y){
+    int ans=1;
+    while(y){
+        if(y%2==1)ans=ans*x%p;
+        y/=2;
+        x=x*x%p;
+    }
+    return ans;
+}
+signed main(){
+    scanf(&quot;%lld%lld%lld&quot;,&amp;a,&amp;b,&amp;p);
+    printf(&quot;%lld^%lld mod %lld=%lld&quot;,a,b,p,fast_times(a%p,b));
+    return 0;
+}
+</code></pre>
+<h2 id="2st表">2.ST表</h2>
+<p>一种特殊的数据结构，用于求静态的部分问题，对应问题的前提是出现重复元素不影响答案。<br>
+时间复杂度对应 \operatorname{O}(n\log n) 的预处理和 \operatorname{O}(1) 的查询。<br>
+<code>ST</code>表通常会分为 \log n + 1 层，从 0 开始编号，第 i 层存储从一个变量起连续 2^i 各元素的答案，查询 [l,r] 时，先求出在第 k=\log(r-l+1) 层，然后求出此层存储由 i 开始的连续变量的答案及由 r 结尾的连续变量的答案综合起来的结果，代码如下：</p>
+<pre><code>class ST_novel{
+	private:
+	int a[100001][39];
+	int nt;
+	int STMax(int x,int y){//合并两结果方式
+		return x&gt;y?x:y;
+        
+	void copy_to_ST(int num[],int begin,int end){//预处理
+		memset(a,~0x3f3f3f3f,sizeof(a));
+		nt=end-begin+1;
+		for(int i=1;i&lt;=end-begin+1;i++){
+			a[i][0]=num[begin+i-1];
+		}
+		for(int j=1;(1&lt;&lt;j)&lt;=nt;j++){
+			for(int i=1;i+(1&lt;&lt;j-1)&lt;=nt;i++){
+				a[i][j]=STMax(a[i][j-1],a[i+(1&lt;&lt;j-1)][j-1]);
+			}
+		}
+	}
+	int ans(int l,int r){//得出答案
+		int k=log2(r-l+1);
+		return STMax(a[l][k],a[r-(1&lt;&lt;k)+1][k]);
+	}
+};
+</code></pre>
+<p>题目：<br>
+<a href="https://www.luogu.com.cn/training/260909">在这里</a></p>
+<h2 id="树状数组">树状数组</h2>
+<p>是另一种数据结构，用于 \operatorname{O}( \log n) 求动态修改和求前缀的答案，它的建立过程如下：</p>
+<ol>
+<li>将全段的答案存入根节点；</li>
+<li>将一段的左半段答案存入左儿子，右半段的存入右儿子直到所有叶节点只对应一个元素的节点为止（此时是线段树）。</li>
+<li>去掉所有节点的右儿子，每个右儿子的左儿子连向那个右儿子的父亲节点。</li>
+</ol>
+<p>此时我们得到的结果如下：</p>
+<pre><code>++++++++
+|    |  |
+++++ |  |
+|  | |  |
+++ | ++ |
+|  | |  |
++  + +  +
+</code></pre>
+<p>我们将节点按后序遍历编号，得：</p>
+<pre><code>+++8++++
+|    |  |
++4++ |  |
+|  | |  |
+2+ | 6+ |
+|  | |  |
+1  3 5  7
+</code></pre>
+<p>我们用 \operatorname{lowbit}(x) 求他在二进制下位数最小的 1 的位值，<br>
+易知：</p>
+<ol>
+<li>我们更新第 x 个变量时，要从 x 号节点开始，向上遍历，对应 x+\operatorname{lowbit}(x) 号节点；</li>
+<li>我们查询一个点为止的前缀时,从 x 开始，到 x-\operatorname{lowbit}(x) 进行求答，直到 x=0 为止。</li>
+</ol>
+<p>故而无需搜索，只需套遍历的方式在数组上遍历即可。<br>
+模板：</p>
+<pre><code class="language-cpp">class tree{
+	private:
+	long long spi[65590],nk;
+	long long lowbit(long long xfd){
+		return xfd&amp;(-xfd);
+	}
+	public:
+    long long isp(long long h){
+		long long ans=0;
+		for(long long i=h;i&gt;0;i-=lowbit(i)){
+			ans+=spi[i];
+		}
+		return ans;
+	}
+	void init(long long l){
+		nk=1;
+		while(nk&lt;l)nk=nk*2;
+		for(long long i=1;i&lt;=nk;i++){spi[i]=0;}
+	}
+	void add(long long place,long long number){
+		for(long long i=place;i&lt;=nk;i+=lowbit(i)){
+			spi[i]+=number;
+        }
+	}
+	long long query(long long lsp,long long rsp){
+		return isp(rsp)-isp(lsp-1);
+	}
+};
+</code></pre>
+<p><a href="https://www.luogu.com.cn/training/260951">例题</a></p>
+<h2 id="倍增表">倍增表</h2>
+<p>此处用 f_{i,j} 求从第 i 个元素移动 2^j 的对应答案，模板如下：</p>
+<pre><code>int f[100001][20];
+//这里可以定义成所有类型。
+inline void ycl(int i,int fp){//i指初始点，fp指第一步跳到的点
+	f[i][0]=fp;
+	int j=1;
+	while(f[i][j-1]!=Not_Exist){//Not_Exist 可以为任意可代表不存在的值
+		f[i][j]=f[f[i][j-1]][j-1];
+	}
+}
+</code></pre>
+<p>可以用作求<code>lca</code>，预处理和查询复杂度都是 \operatorname{O}(\log n)。<br>
+<a href="https://www.luogu.com.cn/training/260956">例题</a></p>
+<h1 id="例题精讲">【例题精讲】</h1>
+<p><a href="https://www.luogu.com.cn/problem/CF519E">题目传送门</a></p>
+<h2 id="思路">思路</h2>
+<h3 id="引理一两点之间最短路以外的点是否是答案取决于最近的最短路上的点">引理一：两点之间最短路以外的点是否是答案取决于最近的最短路上的点</h3>
+<p>由于树上两个点只有一条路径，故而无需考虑其他路径，<br>
+设这个点为 y ,离问题中两点最短路径 x 最近，那么它们会先走到 x 号节点，再去 y 号节点，它们同时走过 x 至 y 的路径，故而我们只需考虑到 x 的路径即可。</p>
+<h3 id="找路径上的答案节点">找路径上的答案节点</h3>
+<p>由于当一个节点属于答案时，它在路径上怎么走，都会改变到问题所问两点的距离，故而至多只有一个路劲上的答案。<br>
+如果两点距离为奇数，没有答案。<br>
+若为偶数，这从一个节点走距离的一半到达的节点即为所求。<br>
+为了简便，我们用深度较大的节点完成全过程。</p>
+<h3 id="通过答案节点推其它答案">通过答案节点推其它答案</h3>
+<p>我们易知答案节点的子树由非问题两点最短路径到达的子节点到达路径时必先到该节点，符合条件。<br>
+同时如果该节点是所问两点的<code>lca</code>，则非路径到达的点是祖先的情况也要算进去。</p>
+<h3 id="代码">代码</h3>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+using namespace std;
+int n,m,x,t;
+struct edge{
+   int to,nxt; 
+}e[200001];
+int s[100001];
+inline void add(int x,int y,int z){
+    e[z*2-1]=edge{y,s[x]};
+    e[z*2]=edge{x,s[y]};
+    s[x]=z*2-1;
+    s[y]=z*2;
+}
+int sz[100001],f[100001][20],d[100001];
+inline void srh(int nk,int l){
+	f[nk][0]=l;
+	d[nk]=d[l]+1;
+	int olp=0;
+	while(f[nk][olp]!=0){
+		olp++;
+		f[nk][olp]=f[f[nk][olp-1]][olp-1];
+	}
+	sz[nk]=1;
+	for(int i=s[nk];i!=0;i=e[i].nxt){
+		if(e[i].to==l)continue;
+		srh(e[i].to,nk);
+		sz[nk]+=sz[e[i].to];
+	}
+}
+inline int skip(int x,int o){
+	for(int i=18;i&gt;=0;i--){
+		if(o&gt;=(1&lt;&lt;i)){
+			o-=(1&lt;&lt;i);
+			x=f[x][i];
+		}
+	}
+	return x;
+}
+inline int fnd_lca(int x,int y){
+	if(d[x]&lt;d[y]){
+		int t=x;
+		x=y;
+		y=t;
+	}
+	x=skip(x,d[x]-d[y]);
+	if(x==y)return x;
+	for(int i=18;i&gt;=0;i--){
+		if(f[x][i]!=f[y][i]){
+			x=f[x][i],y=f[y][i];
+		}
+	}
+	return f[x][0];
+}
+inline void cin(int &amp;x){
+    x=0;
+    bool f=false;
+    char c;
+    while((c&lt;'0'||c&gt;'9')&amp;&amp;c!='-')c=getchar();
+    if(c=='-'){
+        f=true;
+        c=getchar();
+    }
+    while(c&lt;='9'&amp;&amp;c&gt;='0'){
+        x=x*10+c-'0';
+        c=getchar();
+    }
+    if(f)x=-x;
+}
+inline void cout(int f){
+    if(f&lt;0){
+    putchar('-');
+    f=-f;
+   }
+   if(f&gt;=10)cout(f/10);
+   putchar(f%10+'0');
+}
+int main(){
+	cin(n);
+	for(int i=1;i&lt;n;i++){
+		cin(x),cin(t);
+		add(x,t,i);
+	}
+	srh(1,0);
+	cin(m);
+	for(int i=1;i&lt;=m;i++){
+		cin(x),cin(t);
+		if(x==t)cout(n);
+		else if((d[x]+d[t])%2!=0)cout(0);
+		else if(d[x]==d[t])
+			cout(sz[1]-sz[skip(x,d[x]-d[fnd_lca(x,t)]-1)]-sz[skip(t,d[t]-d[fnd_lca(x,t)]-1)]);
+		else {
+			if(d[x]&gt;d[t]){
+				cout(sz[skip(x,(d[x]+d[t])/2-d[fnd_lca(x,t)])]-sz[skip(x,(d[x]+d[t])/2-d[fnd_lca(x,t)]-1)]);
+			}
+			else{
+				cout(sz[skip(t,(d[x]+d[t])/2-d[fnd_lca(x,t)])]-sz[skip(t,(d[x]+d[t])/2-d[fnd_lca(x,t)]-1)]);
+			}
+		}
+		putchar('\n');
+	}
+	return 0;
+}
+
+</code></pre>
+<h1 id="拓展练习">【拓展练习】</h1>
+<p><a href="https://www.luogu.com.cn/training/260957">这里</a></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%80%8D%E5%A2%9E%E7%AE%80%E4%BB%8B">【倍增简介】</a></li>
+<li><a href="#%E6%A8%A1%E5%9D%97">【模块】</a>
+<ul>
+<li><a href="#1-%E6%99%AE%E9%80%9A%E5%80%8D%E5%A2%9E">1. 普通倍增</a></li>
+<li><a href="#2st%E8%A1%A8">2.ST表</a></li>
+<li><a href="#%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84">树状数组</a></li>
+<li><a href="#%E5%80%8D%E5%A2%9E%E8%A1%A8">倍增表</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BE%8B%E9%A2%98%E7%B2%BE%E8%AE%B2">【例题精讲】</a>
+<ul>
+<li><a href="#%E6%80%9D%E8%B7%AF">思路</a>
+<ul>
+<li><a href="#%E5%BC%95%E7%90%86%E4%B8%80%E4%B8%A4%E7%82%B9%E4%B9%8B%E9%97%B4%E6%9C%80%E7%9F%AD%E8%B7%AF%E4%BB%A5%E5%A4%96%E7%9A%84%E7%82%B9%E6%98%AF%E5%90%A6%E6%98%AF%E7%AD%94%E6%A1%88%E5%8F%96%E5%86%B3%E4%BA%8E%E6%9C%80%E8%BF%91%E7%9A%84%E6%9C%80%E7%9F%AD%E8%B7%AF%E4%B8%8A%E7%9A%84%E7%82%B9">引理一：两点之间最短路以外的点是否是答案取决于最近的最短路上的点</a></li>
+<li><a href="#%E6%89%BE%E8%B7%AF%E5%BE%84%E4%B8%8A%E7%9A%84%E7%AD%94%E6%A1%88%E8%8A%82%E7%82%B9">找路径上的答案节点</a></li>
+<li><a href="#%E9%80%9A%E8%BF%87%E7%AD%94%E6%A1%88%E8%8A%82%E7%82%B9%E6%8E%A8%E5%85%B6%E5%AE%83%E7%AD%94%E6%A1%88">通过答案节点推其它答案</a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81">代码</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E6%8B%93%E5%B1%95%E7%BB%83%E4%B9%A0">【拓展练习】</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://NuclearPasta3579.github.io/post/shuang-zhi-zhen/">
+              <h3 class="post-title">
+                双指针
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'd3fea9ea0eaef57f738e',
+    clientSecret: '93ea1d6a6d0695e7e635e3fc856082d56a50f2b9',
+    repo: 'nuclearpasta3579.github.io',
+    owner: 'NuclearPasta3579',
+    admin: ['NuclearPasta3579'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://NuclearPasta3579.github.io//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

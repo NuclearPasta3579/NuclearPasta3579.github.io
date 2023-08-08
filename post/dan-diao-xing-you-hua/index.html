@@ -1,0 +1,597 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>单调性优化 | Nuclear_pasta&#39;s algorithm blog</title>
+<link rel="shortcut icon" href="https://NuclearPasta3579.github.io//favicon.ico?v=1691492062355">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://NuclearPasta3579.github.io//styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="单调性优化 | Nuclear_pasta&#39;s algorithm blog - Atom Feed" href="https://NuclearPasta3579.github.io//atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="1、单调性优化
+单调性优化是一种用于优化动态规划的算法，对于一个转移变量 dp_{i},以及转移函数 f_{i,j}，存在函数 g_{i,j}，使得对于 \forall i&lt;j&lt;k ,dp_i+g_{i,k}&lt;dp_j+g..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://NuclearPasta3579.github.io/">
+  <img class="avatar" src="https://NuclearPasta3579.github.io//images/avatar.png?v=1691492062355" alt="">
+  </a>
+  <h1 class="site-title">
+    Nuclear_pasta&#39;s algorithm blog
+  </h1>
+  <p class="site-description">
+    Algorithm bolg
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              单调性优化
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-08-08
+              </span>
+              <span>
+                13 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="1-单调性优化">1、单调性优化</h1>
+<p>单调性优化是一种用于优化<strong>动态规划</strong>的算法，对于一个转移变量 dp_{i},以及转移函数 f_{i,j}，存在函数 g_{i,j}，使得对于 \forall i&lt;j&lt;k ,dp_i+g_{i,k}&lt;dp_j+g_{j,k}\iff dp_i+f_{i,k}&lt;dp_j+f_{j,k} 或 \forall i&lt;j&lt;k ,dp_i+g_{i,k}&gt;dp_j+g_{j,k}\iff dp_i+f_{i,k}&gt;dp_j+f_{j,k}，则可以用单调性优化线性求解。</p>
+<h1 id="2-单调性优化的应用">2、单调性优化的应用</h1>
+<h2 id="1-双指针">1、 双指针</h2>
+<p>双指针是利用单调性优化的一种算法，详情在<a href="https://nuclearpasta3579.github.io/post/shuang-zhi-zhen/">这里</a></p>
+<h2 id="2-单调栈与单调队列">2、单调栈与单调队列</h2>
+<p>单调栈用于求最近的优于一个变量的另一个变量，其在入栈时会剔除所有在栈顶且比目前变量优先级弱的变量，然后再加入变量，通常来说，单调栈运行时，栈顶剔除变量后先记录答案，即剔除后余下的元素栈顶，然后再进栈。<br>
+代码：</p>
+<pre><code class="language-cpp">//st[i]为单调栈，os[i]为栈内元素下标，ans[i]为答案，sz为栈顶下标,op为加入元素，pl为对应下标,这里展示的是单调递减的单调栈。
+while(sz&gt;=0&amp;&amp;st[sz]&lt;=op)sz--;//剔除
+if(sz&gt;=0)ans[pl]=os[sz];//记录答案
+sz++;
+st[sz]=op;
+os[sz]=pl;//入栈
+</code></pre>
+<p>例题：<a href="https://www.luogu.com.cn/problem/P1823">[COI2007] Patrik 音乐会的等待</a><br>
+解法：<br>
+根据题意，单调栈中的元素中最近的大于该元素的结果对答案有贡献，所以先二分求答案，在进行入栈操作可以解决问题。<br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+using namespace std;
+int n,a[500001];
+long long ansl;
+int top=0,ins[500001];
+inline void cin(int &amp;x){
+    x=0;
+    bool f=false;
+    char c;
+    while((c&lt;'0'||c&gt;'9')&amp;&amp;c!='-')c=getchar();
+    if(c=='-'){
+    	f=true;
+    	c=getchar();
+    }
+    while(c&lt;='9'&amp;&amp;c&gt;='0'){
+        x=x*10+c-'0';
+        c=getchar();
+    }
+    if(f)x=-x;
+}
+inline void cout(long long u){
+    if(u&gt;=10)cout(u/10);
+    putchar(u%10+'0');
+}
+signed main(){
+    cin(n);
+    for(int i=1;i&lt;=n;i++){
+        cin(a[i]);
+        int l=1,r=top+1;
+        while(r-1&gt;l){
+        	int mid=(l+r)/2;
+        	if(a[ins[mid]]&gt;a[i])l=mid;
+        	else r=mid;
+		}
+		ansl+=top-l+1;
+        while(top&gt;0&amp;&amp;a[ins[top]]&lt;a[i])top--;
+        ins[++top]=i;
+    }
+    cout(ansl);
+    return 0;
+}
+
+</code></pre>
+<p>单调队列则用来求无需从前面插入时静态区间最优值，其余单调栈的区别是：</p>
+<ol>
+<li>它的答案对应队首而非栈顶；</li>
+<li>需要在前面将范围以外的元素出队<br>
+代码：</li>
+</ol>
+<pre><code class="language-cpp">class myownqueue_max{
+    private: int q1[2001],qz1[2001],head=1,tail=0;
+    public: void clear(){
+        head=1;
+        tail=0;
+    }
+    int front(){
+        if(tail&lt;head)return 0;
+        else return q1[head];
+    }
+    void push(int number,int place){
+        while(tail&gt;=head&amp;&amp;q1[tail]&lt;=number)tail--;
+        tail=tail+1;
+        q1[tail]=number;
+        qz1[tail]=place;
+    }
+    void kill(int end){
+        while(qz1[head]&lt;end)head++;
+    }
+};
+class myownqueue_min{
+    private: int q2[2001],qz2[2001],head=1,tail=0;
+    public: void clear(){
+        head=1;
+        tail=0;
+    }
+    int front(){
+        if(tail&lt;head)return 0;
+        else return q2[head];
+    }
+    void push(int number,int place){
+        while(tail&gt;=head&amp;&amp;q2[tail]&gt;=number)tail--;
+        tail=tail+1;
+        q2[tail]=number;
+        qz2[tail]=place;
+    }
+    void kill(int end){
+        while(qz2[head]&lt;end)head++;
+    }
+};
+</code></pre>
+<p>例题：<a href="https://www.luogu.com.cn/problem/P2216">[HAOI2007]理想的正方形</a><br>
+解法：先记录其中一维的结果，再用于推另一维的结果。<br>
+代码：</p>
+<pre><code class="language-cpp">#include&lt;cstdio&gt;
+#define int long long
+using namespace std;
+int a,b,n,num[1009][1009],most[1009][1009],least[1009][1009],ans=0x3f3f3f3f;
+class myownqueue_max{
+    private: int q1[2001],qz1[2001],head=1,tail=0;
+    public: void clear(){
+        head=1;
+        tail=0;
+    }
+    int front(){
+        if(tail&lt;head)return 0;
+        else return q1[head];
+    }
+    void push(int number,int place){
+        while(tail&gt;=head&amp;&amp;q1[tail]&lt;=number)tail--;
+        tail=tail+1;
+        q1[tail]=number;
+        qz1[tail]=place;
+    }
+    void kill(int end){
+        while(qz1[head]&lt;end&amp;&amp;head&lt;=tail)head++;
+    }
+};
+class myownqueue_min{
+    private: int q2[2001],qz2[2001],head=1,tail=0;
+    public: void clear(){
+        head=1;
+        tail=0;
+    }
+    int front(){
+        if(tail&lt;head)return 0;
+        else return q2[head];
+    }
+    void push(int number,int place){
+        while(tail&gt;=head&amp;&amp;q2[tail]&gt;=number)tail--;
+        tail=tail+1;
+        q2[tail]=number;
+        qz2[tail]=place;
+    }
+    void kill(int end){
+        while(qz2[head]&lt;end&amp;&amp;head&lt;=tail)head++;
+    }
+};
+inline int min(int x,int y){
+    if(x&gt;=y)return y;
+    else return x;
+}
+myownqueue_max qmax;
+myownqueue_min qmin;
+inline void cin(int &amp;x){
+    x=0;
+    bool f=false;
+    char c;
+    while((c&lt;'0'||c&gt;'9')&amp;&amp;c!='-')c=getchar();
+    if(c=='-'){
+    	f=true;
+    	c=getchar();
+    }
+    while(c&lt;='9'&amp;&amp;c&gt;='0'){
+        x=x*10+c-'0';
+        c=getchar();
+    }
+    if(f)x=-x;
+}
+inline void cout(int u){
+    if(u&gt;=10)cout(u/10);
+    putchar(u%10+'0');
+}
+signed main(){
+    cin(a),cin(b),cin(n);
+    for(int i=1;i&lt;=a;i++)
+        for(int j=1;j&lt;=b;j++)
+            cin(num[i][j]);
+    for(int i=1;i&lt;=b;i++){
+        qmax.clear();
+        qmin.clear();
+        for(int j=1;j&lt;=a;j++){
+            qmax.push(num[j][i],j);
+            qmin.push(num[j][i],j);
+            if(j&gt;=n){
+                qmax.kill(j-n+1);
+                qmin.kill(j-n+1);
+                most[j-n+1][i]=qmax.front();
+                least[j-n+1][i]=qmin.front();
+            }
+        }
+    }
+    for(int i=1;i&lt;=a-n+1;i++){
+        qmax.clear();
+        qmin.clear();
+        for(int j=1;j&lt;=b;j++){
+            qmax.push(most[i][j],j);
+            qmin.push(least[i][j],j);
+            if(j&gt;=n){
+                qmax.kill(j-n+1);
+                qmin.kill(j-n+1);
+                ans=min(ans,qmax.front()-qmin.front());
+            }
+        }
+    }
+    cout(ans);
+    return 0;
+}
+</code></pre>
+<p><a href="https://www.luogu.com.cn/training/288486">练习</a></p>
+<h2 id="3-多重背包">3、多重背包</h2>
+<p>利用单调性优化可以将多重背包问题的复杂度降为 O(nW)，其在枚举每一个物品时，枚举其模物品价值余数和商，对于每个物品和模数的情况，用单调队列维护 dp_{i,j+k \times w_i}-k \times v_i，用来更新答案。<br>
+代码：</p>
+<pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+int n, v[10005], w[10005], m[10005], W;
+int dp[10005][1005];
+
+int main() {
+	cin &gt;&gt; n &gt;&gt; W;
+	for (int i = 1; i &lt;= n; i++) {
+		cin &gt;&gt; v[i] &gt;&gt; w[i] &gt;&gt; m[i];
+	}
+	memset(dp, ~0x3f, sizeof(dp));
+	dp[0][0] = 0;
+	for (int i = 1; i &lt;= n; i++) {
+		for (int j = 0; j &lt; w[i]; j++) {
+			deque&lt;int&gt;q;
+			for (int k = 0; k * w[i] + j &lt;= W; k++) {
+				while (!q.empty() &amp;&amp; dp[i - 1][j + k * w[i]] - k * v[i] &gt;= dp[i - 1][j + q.back()*w[i]] - q.back()*v[i])
+					q.pop_back();
+				if (!q.empty() &amp;&amp; k - q.front() &gt; m[i])
+					q.pop_front();
+				q.push_back(k);
+				dp[i][k * w[i] + j] = dp[i - 1][j + q.front() * w[i]] + (k - q.front()) * v[i];
+			}
+		}
+	}
+	int ans = 0;
+	for (int j = 0; j &lt;= W; j++) {
+		ans = max(ans, dp[n][j]);
+	}
+	printf(&quot;%d\n&quot;, ans);
+	return 0;
+}
+</code></pre>
+<p>题目：<a href="https://www.luogu.com.cn/problem/P4544">[USACO10NOV]Buying Feed G</a><br>
+解法：将商店按位置排序，然后直接进行多重背包，注意额外贡献。<br>
+代码：</p>
+<pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+int n,W,e;
+long long v[505], w[505], m[505],VP[505],WP[505],MP[505],c[505],CP[505];
+int TP[505];
+long long dp[505][10005];
+bool cmp(int i,int j){
+	return c[i]&lt;c[j];
+}
+int main() {
+	cin &gt;&gt;W&gt;&gt;e&gt;&gt;n;
+	for (int i = 1; i &lt;= n; i++) {
+		cin &gt;&gt; c[i] &gt;&gt; m[i] &gt;&gt; v[i];
+		TP[i]=i;
+		w[i]=1;
+	}
+	sort(TP+1,TP+n+1,cmp);
+	for(int i=1;i&lt;=n;i++){
+		int j=TP[i];
+		VP[i]=v[j];
+		CP[i]=c[j];
+		MP[i]=m[j];
+	}
+	memcpy(v,VP,sizeof(v));
+	memcpy(c,CP,sizeof(c));
+	memcpy(m,MP,sizeof(m));
+	for(int i=0;i&lt;=n;i++){
+		for(int j=0;j&lt;=W;j++){
+			dp[i][j]=9e18;
+		}
+	}
+	dp[0][0] = 0;
+	for (int i = 1; i &lt;= n; i++) {
+		for (int j = 0; j &lt; w[i]; j++) {
+			deque&lt;long long&gt;q;
+			long long u=c[i]-c[i-1];
+			for (int k = 0; k * w[i] + j &lt;= W; k++) {
+				while (!q.empty() &amp;&amp; dp[i - 1][j + k * w[i]] - k * v[i]+(j + k * w[i])*(j + k * w[i])*u &lt;= dp[i - 1][j + q.back()*w[i]] - q.back()*v[i]+(j + q.back()*w[i])*(j + q.back()*w[i])*u)
+					q.pop_back();
+				if (!q.empty() &amp;&amp; k - q.front() &gt; m[i])
+					q.pop_front();
+				q.push_back(k);
+				dp[i][k * w[i] + j] = dp[i - 1][j + q.front() * w[i]] + (k - q.front()) * v[i]+(j + q.front() * w[i])*(j + q.front() * w[i])*u;
+			}
+		}
+	}
+	long long u=e-c[n];
+	cout&lt;&lt;dp[n][W]+u*W*W;
+	return 0;
+}
+
+</code></pre>
+<h2 id="4-斜率优化318更新">4、斜率优化（3.18更新）</h2>
+<p>斜率优化是指对于转移方程为形如 y=kx+b 的一次函数时，使用的一种优化方式，其维护一个队列，队列中存储一次函数，设目前对应 x=i，要加入 y=k_5 x+b_5。<br>
+则：</p>
+<ul>
+<li>若队列大小不大于 1，不进行删除操作，否则进行删除。</li>
+<li>设队列前两个元素对应 y_1 = k_1 x+b_1 和 y_2 = k_2 x +b_2，x_0 使 k_1 x_0+b_1=k_2 x_0+b_2，则当 x_0 \req i 时停止删除，否则删除队首并继续删除。</li>
+<li>队尾删除则对应当队尾和新插入函数的交点的横坐标小于等于队尾和倒数第二个的时删除。</li>
+<li>最后用队首修改元素。</li>
+</ul>
+<p>示例：<a href="https://www.luogu.com.cn/problem/P5017">P5017 [NOIP2018 普及组] 摆渡车</a><br>
+解法：我们用 dp_i 来表示第 i 时刻发车的最小等待时间，s_i 表示前 i 时刻学生到达时间之和，cnt_i 表示前 i 时刻到达的学生人数，则 dp_i=\min{dp_j+s_j-cnt_j \times i+cnt_i\times i+s_i}，得：</p>
+<ul>
+<li>k=-cnt_j</li>
+<li>b=dp_j+s_j</li>
+<li>转移时额外加 cnt_i\times i+s_i</li>
+<li>x=i</li>
+</ul>
+<p>代码：</p>
+<pre><code class="language-cpp">#include&lt;bits/stdc++.h&gt;
+#define int long long
+using namespace std;
+int n,m,t,s[4000009],dp[4000009],cnt[4000009],maxt;
+inline int k(int i){
+	return -cnt[i];
+}
+inline int b(int i){
+	return dp[i]+s[i];
+}
+inline int x(int i){
+	return i;
+}
+inline int dp_add(int i){
+	return cnt[i]*i-s[i];
+}
+inline bool cmpadd(int l1,int l2,int l3){
+	return (b(l1)-b(l2))*(k(l3)-k(l2))&gt;=(b(l2)-b(l3))*(k(l2)-k(l1));
+}
+inline bool cmpkill(int l1,int l2,int kill_time){
+	return b(l2)-b(l1)&lt;=kill_time*(k(l1)-k(l2));
+}
+signed main(){
+	scanf(&quot;%lld%lld&quot;,&amp;n,&amp;m);
+	for(int i=1;i&lt;=n;i++){
+		scanf(&quot;%lld&quot;,&amp;t);
+		maxt=max(maxt,t);
+		cnt[t]+=1;
+		s[t]+=t;
+	}
+	for(int i=1;i&lt;=maxt+m;i++){
+		cnt[i]+=cnt[i-1];
+		s[i]+=s[i-1];
+	}
+	deque&lt;int&gt;q;
+	for(int i=0;i&lt;m;i++){
+		dp[i]=cnt[i]*i-s[i];
+	}
+	for(int i=m;i&lt;=maxt+m;i++){
+		if(!(q.size()&gt;0&amp;&amp;k(q.back())==k(i-m)&amp;&amp;b(q.back())&lt;=b(i-m))){
+			if((q.size()&gt;0&amp;&amp;k(q.back())==k(i-m)))q.pop_back();
+			while(q.size()&gt;=2){
+				int a=q.back();
+				q.pop_back();
+				int b=q.back();
+				if(!cmpadd(b,a,i-m)){
+					q.push_back(a);
+					break;
+				}
+			}
+			q.push_back(i-m);
+		}
+		while(q.size()&gt;=2){
+			int a=q.front();
+			q.pop_front();
+			int b=q.front();
+			if(!cmpkill(a,b,i)){
+				q.push_front(a);
+				break;
+			}
+		}
+		int a=q.front();
+		dp[i]=k(a)*x(i)+b(a)+dp_add(i);
+	}
+	int ans=9e18;
+	for(int i=maxt;i&lt;=maxt+m;i++){
+		ans=min(ans,dp[i]);
+	}
+	printf(&quot;%lld&quot;,ans);
+	return 0;
+}
+
+</code></pre>
+<p>练习：敬请期待。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1-%E5%8D%95%E8%B0%83%E6%80%A7%E4%BC%98%E5%8C%96">1、单调性优化</a></li>
+<li><a href="#2-%E5%8D%95%E8%B0%83%E6%80%A7%E4%BC%98%E5%8C%96%E7%9A%84%E5%BA%94%E7%94%A8">2、单调性优化的应用</a>
+<ul>
+<li><a href="#1-%E5%8F%8C%E6%8C%87%E9%92%88">1、 双指针</a></li>
+<li><a href="#2-%E5%8D%95%E8%B0%83%E6%A0%88%E4%B8%8E%E5%8D%95%E8%B0%83%E9%98%9F%E5%88%97">2、单调栈与单调队列</a></li>
+<li><a href="#3-%E5%A4%9A%E9%87%8D%E8%83%8C%E5%8C%85">3、多重背包</a></li>
+<li><a href="#4-%E6%96%9C%E7%8E%87%E4%BC%98%E5%8C%96318%E6%9B%B4%E6%96%B0">4、斜率优化（3.18更新）</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://NuclearPasta3579.github.io/post/fen-zhi/">
+              <h3 class="post-title">
+                分治
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'd3fea9ea0eaef57f738e',
+    clientSecret: '93ea1d6a6d0695e7e635e3fc856082d56a50f2b9',
+    repo: 'nuclearpasta3579.github.io',
+    owner: 'NuclearPasta3579',
+    admin: ['NuclearPasta3579'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://NuclearPasta3579.github.io//atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
